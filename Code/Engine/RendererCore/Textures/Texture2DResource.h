@@ -55,6 +55,7 @@ private:
 
 protected:
   friend class ezRenderContext;
+  friend class ezDebugRenderer;
 
   ezTexture2DResource(DoUpdate ResourceUpdateThread);
 
