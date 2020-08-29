@@ -13,7 +13,7 @@ ezAnimationControllerAssetManager::ezAnimationControllerAssetManager()
 {
   ezDocumentManager::s_Events.AddEventHandler(ezMakeDelegate(&ezAnimationControllerAssetManager::OnDocumentManagerEvent, this));
 
-  m_DocTypeDesc.m_sDocumentTypeName = "AnimationController";
+  m_DocTypeDesc.m_sDocumentTypeName = "Animation Controller";
   m_DocTypeDesc.m_sFileExtension = "ezAnimationControllerAsset";
   m_DocTypeDesc.m_sIcon = ":/AssetIcons/AnimationController.png";
   m_DocTypeDesc.m_pDocumentType = ezGetStaticRTTI<ezAnimationControllerAssetDocument>();

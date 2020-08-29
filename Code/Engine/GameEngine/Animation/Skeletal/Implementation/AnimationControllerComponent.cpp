@@ -1,14 +1,22 @@
 #include <GameEnginePCH.h>
 
+#include <Core/Input/InputManager.h>
+#include <Core/WorldSerializer/WorldReader.h>
+#include <Core/WorldSerializer/WorldWriter.h>
+#include <Foundation/Strings/HashedString.h>
 #include <GameEngine/Animation/Skeletal/AnimationControllerComponent.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationControllerResource.h>
+#include <RendererCore/AnimationSystem/SkeletonResource.h>
 
 // clang-format off
-EZ_BEGIN_ABSTRACT_COMPONENT_TYPE(ezAnimationControllerComponent, 1);
+EZ_BEGIN_COMPONENT_TYPE(ezAnimationControllerComponent, 1, ezComponentMode::Static);
 {
-  //EZ_BEGIN_PROPERTIES
-  //{
-  //}
-  //EZ_END_PROPERTIES;
+  EZ_BEGIN_PROPERTIES
+  {
+    EZ_ACCESSOR_PROPERTY("Skeleton", GetSkeletonFile, SetSkeletonFile)->AddAttributes(new ezAssetBrowserAttribute("Skeleton")),
+    EZ_ACCESSOR_PROPERTY("AnimController", GetAnimationControllerFile, SetAnimationControllerFile)->AddAttributes(new ezAssetBrowserAttribute("Animation Controller")),
+  }
+  EZ_END_PROPERTIES;
 
   EZ_BEGIN_ATTRIBUTES
   {
@@ -16,8 +24,131 @@ EZ_BEGIN_ABSTRACT_COMPONENT_TYPE(ezAnimationControllerComponent, 1);
   }
   EZ_END_ATTRIBUTES;
 }
-EZ_END_ABSTRACT_COMPONENT_TYPE
+EZ_END_COMPONENT_TYPE
 // clang-format on
 
 ezAnimationControllerComponent::ezAnimationControllerComponent() = default;
 ezAnimationControllerComponent::~ezAnimationControllerComponent() = default;
+
+void ezAnimationControllerComponent::SerializeComponent(ezWorldWriter& stream) const
+{
+  SUPER::SerializeComponent(stream);
+  auto& s = stream.GetStream();
+
+  s << m_hSkeleton;
+  s << m_hAnimationController;
+}
+
+void ezAnimationControllerComponent::DeserializeComponent(ezWorldReader& stream)
+{
+  SUPER::DeserializeComponent(stream);
+  const ezUInt32 uiVersion = stream.GetComponentTypeVersion(GetStaticRTTI());
+  auto& s = stream.GetStream();
+
+  s >> m_hSkeleton;
+  s >> m_hAnimationController;
+}
+
+void ezAnimationControllerComponent::SetSkeleton(const ezSkeletonResourceHandle& hResource)
+{
+  m_hSkeleton = hResource;
+}
+
+const ezSkeletonResourceHandle& ezAnimationControllerComponent::GetSkeleton() const
+{
+  return m_hSkeleton;
+}
+
+void ezAnimationControllerComponent::SetSkeletonFile(const char* szFile)
+{
+  ezSkeletonResourceHandle hResource;
+
+  if (!ezStringUtils::IsNullOrEmpty(szFile))
+  {
+    hResource = ezResourceManager::LoadResource<ezSkeletonResource>(szFile);
+  }
+
+  SetSkeleton(hResource);
+}
+
+const char* ezAnimationControllerComponent::GetSkeletonFile() const
+{
+  if (!m_hSkeleton.IsValid())
+    return "";
+
+  return m_hSkeleton.GetResourceID();
+}
+
+
+void ezAnimationControllerComponent::SetAnimationControllerFile(const char* szFile)
+{
+  ezAnimationControllerResourceHandle hResource;
+
+  if (!ezStringUtils::IsNullOrEmpty(szFile))
+  {
+    hResource = ezResourceManager::LoadResource<ezAnimationControllerResource>(szFile);
+  }
+
+  m_hAnimationController = hResource;
+}
+
+
+const char* ezAnimationControllerComponent::GetAnimationControllerFile() const
+{
+  if (!m_hAnimationController.IsValid())
+    return "";
+
+  return m_hAnimationController.GetResourceID();
+}
+
+void ezAnimationControllerComponent::OnSimulationStarted()
+{
+  SUPER::OnSimulationStarted();
+
+  if (!m_hAnimationController.IsValid())
+    return;
+  if (!m_hSkeleton.IsValid())
+    return;
+
+  ezResourceLock<ezAnimationControllerResource> pAnimController(m_hAnimationController, ezResourceAcquireMode::BlockTillLoaded_NeverFail);
+  if (pAnimController.GetAcquireResult() != ezResourceAcquireResult::Final)
+    return;
+
+  pAnimController->DeserializeAnimationControllerState(m_AnimationGraph);
+
+  m_AnimationGraph.m_hSkeleton = m_hSkeleton;
+
+  ezHashedString hs;
+  hs.Assign("Left");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Right");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Forwards");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Backwards");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Idle");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+}
+
+void ezAnimationControllerComponent::Update()
+{
+  if (!m_hSkeleton.IsValid())
+    return;
+
+  m_AnimationGraph.Update(GetWorld()->GetClock().GetTimeDiff());
+  m_AnimationGraph.SendResultTo(GetOwner());
+
+  float fValue;
+
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_NegX, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Left", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_PosX, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Right", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_NegY, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Backwards", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_PosY, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Forwards", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_ButtonA, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Idle", fValue);
+}

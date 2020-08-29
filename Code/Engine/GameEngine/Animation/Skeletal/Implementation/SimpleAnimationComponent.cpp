@@ -2,7 +2,7 @@
 
 #include <Core/WorldSerializer/WorldReader.h>
 #include <Core/WorldSerializer/WorldWriter.h>
-#include <GameEngine/Animation/Skeletal/SimpleAnimationControllerComponent.h>
+#include <GameEngine/Animation/Skeletal/SimpleAnimationComponent.h>
 #include <RendererCore/AnimationSystem/AnimationClipResource.h>
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 #include <ozz/animation/runtime/animation.h>
@@ -15,7 +15,7 @@ using namespace ozz::animation;
 using namespace ozz::math;
 
 // clang-format off
-EZ_BEGIN_COMPONENT_TYPE(ezSimpleAnimationControllerComponent, 1, ezComponentMode::Static);
+EZ_BEGIN_COMPONENT_TYPE(ezSimpleAnimationComponent, 1, ezComponentMode::Static);
 {
   EZ_BEGIN_PROPERTIES
   {
@@ -35,10 +35,10 @@ EZ_BEGIN_COMPONENT_TYPE(ezSimpleAnimationControllerComponent, 1, ezComponentMode
 EZ_END_COMPONENT_TYPE
 // clang-format on
 
-ezSimpleAnimationControllerComponent::ezSimpleAnimationControllerComponent() = default;
-ezSimpleAnimationControllerComponent::~ezSimpleAnimationControllerComponent() = default;
+ezSimpleAnimationComponent::ezSimpleAnimationComponent() = default;
+ezSimpleAnimationComponent::~ezSimpleAnimationComponent() = default;
 
-void ezSimpleAnimationControllerComponent::SerializeComponent(ezWorldWriter& stream) const
+void ezSimpleAnimationComponent::SerializeComponent(ezWorldWriter& stream) const
 {
   SUPER::SerializeComponent(stream);
   auto& s = stream.GetStream();
@@ -49,7 +49,7 @@ void ezSimpleAnimationControllerComponent::SerializeComponent(ezWorldWriter& str
   s << m_hSkeleton;
 }
 
-void ezSimpleAnimationControllerComponent::DeserializeComponent(ezWorldReader& stream)
+void ezSimpleAnimationComponent::DeserializeComponent(ezWorldReader& stream)
 {
   SUPER::DeserializeComponent(stream);
   const ezUInt32 uiVersion = stream.GetComponentTypeVersion(GetStaticRTTI());
@@ -61,17 +61,17 @@ void ezSimpleAnimationControllerComponent::DeserializeComponent(ezWorldReader& s
   s >> m_hSkeleton;
 }
 
-void ezSimpleAnimationControllerComponent::SetAnimationClip(const ezAnimationClipResourceHandle& hResource)
+void ezSimpleAnimationComponent::SetAnimationClip(const ezAnimationClipResourceHandle& hResource)
 {
   m_hAnimationClip = hResource;
 }
 
-const ezAnimationClipResourceHandle& ezSimpleAnimationControllerComponent::GetAnimationClip() const
+const ezAnimationClipResourceHandle& ezSimpleAnimationComponent::GetAnimationClip() const
 {
   return m_hAnimationClip;
 }
 
-void ezSimpleAnimationControllerComponent::SetAnimationClipFile(const char* szFile)
+void ezSimpleAnimationComponent::SetAnimationClipFile(const char* szFile)
 {
   ezAnimationClipResourceHandle hResource;
 
@@ -83,7 +83,7 @@ void ezSimpleAnimationControllerComponent::SetAnimationClipFile(const char* szFi
   SetAnimationClip(hResource);
 }
 
-const char* ezSimpleAnimationControllerComponent::GetAnimationClipFile() const
+const char* ezSimpleAnimationComponent::GetAnimationClipFile() const
 {
   if (!m_hAnimationClip.IsValid())
     return "";
@@ -91,17 +91,17 @@ const char* ezSimpleAnimationControllerComponent::GetAnimationClipFile() const
   return m_hAnimationClip.GetResourceID();
 }
 
-void ezSimpleAnimationControllerComponent::SetSkeleton(const ezSkeletonResourceHandle& hResource)
+void ezSimpleAnimationComponent::SetSkeleton(const ezSkeletonResourceHandle& hResource)
 {
   m_hSkeleton = hResource;
 }
 
-const ezSkeletonResourceHandle& ezSimpleAnimationControllerComponent::GetSkeleton() const
+const ezSkeletonResourceHandle& ezSimpleAnimationComponent::GetSkeleton() const
 {
   return m_hSkeleton;
 }
 
-void ezSimpleAnimationControllerComponent::SetSkeletonFile(const char* szFile)
+void ezSimpleAnimationComponent::SetSkeletonFile(const char* szFile)
 {
   ezSkeletonResourceHandle hResource;
 
@@ -113,7 +113,7 @@ void ezSimpleAnimationControllerComponent::SetSkeletonFile(const char* szFile)
   SetSkeleton(hResource);
 }
 
-const char* ezSimpleAnimationControllerComponent::GetSkeletonFile() const
+const char* ezSimpleAnimationComponent::GetSkeletonFile() const
 {
   if (!m_hSkeleton.IsValid())
     return "";
@@ -121,7 +121,7 @@ const char* ezSimpleAnimationControllerComponent::GetSkeletonFile() const
   return m_hSkeleton.GetResourceID();
 }
 
-void ezSimpleAnimationControllerComponent::Update()
+void ezSimpleAnimationComponent::Update()
 {
   if (!m_hSkeleton.IsValid() || !m_hAnimationClip.IsValid() && m_fSpeed == 0.0f)
     return;
@@ -182,7 +182,7 @@ void ezSimpleAnimationControllerComponent::Update()
   }
 }
 
-bool ezSimpleAnimationControllerComponent::UpdatePlaybackTime(ezTime tDiff, ezTime duration)
+bool ezSimpleAnimationComponent::UpdatePlaybackTime(ezTime tDiff, ezTime duration)
 {
   if (tDiff.IsZero() || m_fSpeed == 0.0f)
     return false;

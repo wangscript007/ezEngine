@@ -10,7 +10,7 @@
 #include <Foundation/IO/FileSystem/FileSystem.h>
 #include <GameEngine/Animation/RotorComponent.h>
 #include <GameEngine/Animation/Skeletal/AnimatedMeshComponent.h>
-#include <GameEngine/Animation/Skeletal/SimpleAnimationControllerComponent.h>
+#include <GameEngine/Animation/Skeletal/SimpleAnimationComponent.h>
 #include <GameEngine/Animation/SliderComponent.h>
 #include <GameEngine/GameApplication/GameApplication.h>
 #include <GameEngine/Gameplay/InputComponent.h>
@@ -95,8 +95,8 @@ void ezAnimationClipContext::OnInitialize()
     m_hSkeletonComponent = ezVisualizeSkeletonComponent::CreateComponent(m_pGameObject, pVisSkeleton);
     pVisSkeleton->SetSkeleton(hSkeleton);
 
-    ezSimpleAnimationControllerComponent* pAnimController;
-    ezSimpleAnimationControllerComponent::CreateComponent(m_pGameObject, pAnimController);
+    ezSimpleAnimationComponent* pAnimController;
+    ezSimpleAnimationComponent::CreateComponent(m_pGameObject, pAnimController);
     pAnimController->SetSkeleton(hSkeleton);
     pAnimController->SetAnimationClipFile(sAnimClipGuid);
 

@@ -13,11 +13,11 @@
 using ezAnimationClipResourceHandle = ezTypedResourceHandle<class ezAnimationClipResource>;
 using ezSkeletonResourceHandle = ezTypedResourceHandle<class ezSkeletonResource>;
 
-using ezSimpleAnimationControllerComponentManager = ezComponentManagerSimple<class ezSimpleAnimationControllerComponent, ezComponentUpdateType::WhenSimulating, ezBlockStorageType::FreeList>;
+using ezSimpleAnimationComponentManager = ezComponentManagerSimple<class ezSimpleAnimationComponent, ezComponentUpdateType::WhenSimulating, ezBlockStorageType::FreeList>;
 
-class EZ_GAMEENGINE_DLL ezSimpleAnimationControllerComponent : public ezAnimationControllerComponent
+class EZ_GAMEENGINE_DLL ezSimpleAnimationComponent : public ezComponent
 {
-  EZ_DECLARE_COMPONENT_TYPE(ezSimpleAnimationControllerComponent, ezAnimationControllerComponent, ezSimpleAnimationControllerComponentManager);
+  EZ_DECLARE_COMPONENT_TYPE(ezSimpleAnimationComponent, ezComponent, ezSimpleAnimationComponentManager);
 
   //////////////////////////////////////////////////////////////////////////
   // ezComponent
@@ -30,8 +30,8 @@ public:
   // ezJointAttachmentComponent
 
 public:
-  ezSimpleAnimationControllerComponent();
-  ~ezSimpleAnimationControllerComponent();
+  ezSimpleAnimationComponent();
+  ~ezSimpleAnimationComponent();
 
   void SetAnimationClip(const ezAnimationClipResourceHandle& hResource);
   const ezAnimationClipResourceHandle& GetAnimationClip() const;

@@ -151,9 +151,12 @@ ezStatus ezAnimationControllerAssetDocument::InternalTransformAsset(ezStreamWrit
     }
   }
 
-  // TODO: ezAnimationControllerResourceDescriptor
+  ezMemoryStreamStorage storage;
+  ezMemoryStreamWriter writer(&storage);
+  EZ_SUCCEED_OR_RETURN(animController.Serialize(writer));
 
-  return animController.Serialize(stream);
+  stream << storage.GetStorageSize();
+  return stream.WriteBytes(storage.GetData(), storage.GetStorageSize());
 }
 
 void ezAnimationControllerAssetDocument::InternalGetMetaDataHash(const ezDocumentObject* pObject, ezUInt64& inout_uiHash) const
