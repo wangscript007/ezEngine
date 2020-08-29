@@ -52,8 +52,9 @@ public:
   virtual ezResult SerializeNode(ezStreamWriter& stream) const override;
   virtual ezResult DeserializeNode(ezStreamReader& stream) override;
 
-  ezTime m_RampUp;   // [ property ]
-  ezTime m_RampDown; // [ property ]
+  ezTime m_RampUp;       // [ property ]
+  ezTime m_RampDown;     // [ property ]
+  float m_fSpeed = 1.0f; // [ property ]
 
   ezAnimationClipResourceHandle m_hAnimationClip;
 

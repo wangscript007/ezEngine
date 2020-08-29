@@ -119,6 +119,8 @@ void ezAnimationControllerComponent::OnSimulationStarted()
   m_AnimationGraph.m_hSkeleton = m_hSkeleton;
 
   ezHashedString hs;
+  hs.Assign("Idle");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
   hs.Assign("Left");
   m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
   hs.Assign("Right");
@@ -127,7 +129,13 @@ void ezAnimationControllerComponent::OnSimulationStarted()
   m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
   hs.Assign("Backwards");
   m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
-  hs.Assign("Idle");
+  hs.Assign("A");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("B");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("X");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Y");
   m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
 }
 
@@ -140,15 +148,39 @@ void ezAnimationControllerComponent::Update()
   m_AnimationGraph.SendResultTo(GetOwner());
 
   float fValue;
+  bool bActive = false;
 
   ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_NegX, &fValue);
   m_AnimationGraph.m_Blackboard.SetEntryValue("Left", fValue);
+  bActive |= fValue != 0;
+
   ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_PosX, &fValue);
   m_AnimationGraph.m_Blackboard.SetEntryValue("Right", fValue);
+  bActive |= fValue != 0;
+
   ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_NegY, &fValue);
   m_AnimationGraph.m_Blackboard.SetEntryValue("Backwards", fValue);
+  bActive |= fValue != 0;
+
   ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_PosY, &fValue);
   m_AnimationGraph.m_Blackboard.SetEntryValue("Forwards", fValue);
+  bActive |= fValue != 0;
+
   ezInputManager::GetInputSlotState(ezInputSlot_Controller0_ButtonA, &fValue);
-  m_AnimationGraph.m_Blackboard.SetEntryValue("Idle", fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("A", fValue);
+  bActive |= fValue != 0;
+
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_ButtonB, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("B", fValue);
+  bActive |= fValue != 0;
+
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_ButtonX, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("X", fValue);
+  bActive |= fValue != 0;
+
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_ButtonY, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Y", fValue);
+  bActive |= fValue != 0;
+
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Idle", bActive ? 0.0f : 1.0f);
 }

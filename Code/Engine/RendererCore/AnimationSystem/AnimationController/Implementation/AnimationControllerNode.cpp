@@ -17,6 +17,7 @@ EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezSampleAnimGraphNode, 1, ezRTTIDefaultAllocator
   {
     EZ_ACCESSOR_PROPERTY("AnimationClip", GetAnimationClip, SetAnimationClip)->AddAttributes(new ezAssetBrowserAttribute("Animation Clip")),
     EZ_ACCESSOR_PROPERTY("BlackboardEntry", GetBlackboardEntry, SetBlackboardEntry),
+    EZ_MEMBER_PROPERTY("Speed", m_fSpeed)->AddAttributes(new ezDefaultValueAttribute(1.0f)),
     EZ_MEMBER_PROPERTY("RampUpTime", m_RampUp),
     EZ_MEMBER_PROPERTY("RampDownTime", m_RampDown),
   }
@@ -60,6 +61,11 @@ float ezSampleAnimGraphNode::UpdateWeight(ezTime tDiff)
     m_fCurWeight = ezMath::Max(0.0f, m_fCurWeight);
   }
 
+  if (m_fCurWeight <= 0.0f)
+  {
+    m_PlaybackTime.SetZero();
+  }
+
   return m_fCurWeight;
 }
 
@@ -76,10 +82,14 @@ void ezSampleAnimGraphNode::Step(ezTime tDiff, const ezSkeletonResource* pSkelet
 
   const auto& animDesc = pAnimClip->GetDescriptor();
 
-  m_PlaybackTime += tDiff;
-  if (m_PlaybackTime > animDesc.GetDuration())
+  m_PlaybackTime += tDiff * m_fSpeed;
+  if (m_fSpeed > 0 && m_PlaybackTime > animDesc.GetDuration())
   {
     m_PlaybackTime -= animDesc.GetDuration();
+  }
+  else if (m_fSpeed < 0 && m_PlaybackTime < ezTime::Zero())
+  {
+    m_PlaybackTime += animDesc.GetDuration();
   }
 
   const ozz::animation::Animation* pOzzAnimation = &animDesc.GetMappedOzzAnimation(*pSkeleton);
@@ -142,6 +152,7 @@ ezResult ezSampleAnimGraphNode::SerializeNode(ezStreamWriter& stream) const
   stream << m_RampDown;
   stream << m_PlaybackTime;
   stream << m_hAnimationClip;
+  stream << m_fSpeed;
 
   return EZ_SUCCESS;
 }
@@ -157,6 +168,7 @@ ezResult ezSampleAnimGraphNode::DeserializeNode(ezStreamReader& stream)
   stream >> m_RampDown;
   stream >> m_PlaybackTime;
   stream >> m_hAnimationClip;
+  stream >> m_fSpeed;
 
   return EZ_SUCCESS;
 }
