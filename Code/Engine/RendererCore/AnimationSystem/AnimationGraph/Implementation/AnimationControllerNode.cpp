@@ -1,14 +1,14 @@
 #include <RendererCorePCH.h>
 
 #include <AnimationSystem/AnimationClipResource.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationGraph.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationGraphNode.h>
+#include <RendererCore/AnimationSystem/AnimationGraph/AnimationController.h>
+#include <RendererCore/AnimationSystem/AnimationGraph/AnimationControllerNode.h>
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 #include <ozz/animation/runtime/sampling_job.h>
 #include <ozz/animation/runtime/skeleton.h>
 
 // clang-format off
-EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezAnimationGraphNode, 1, ezRTTINoAllocator)
+EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezAnimationControllerNode, 1, ezRTTINoAllocator)
 EZ_END_DYNAMIC_REFLECTED_TYPE;
 
 EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezSampleAnimGraphNode, 1, ezRTTIDefaultAllocator<ezSampleAnimGraphNode>)
@@ -25,8 +25,8 @@ EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezSampleAnimGraphNode, 1, ezRTTIDefaultAllocator
 EZ_END_DYNAMIC_REFLECTED_TYPE;
 // clang-format on
 
-ezAnimationGraphNode::ezAnimationGraphNode() = default;
-ezAnimationGraphNode::~ezAnimationGraphNode() = default;
+ezAnimationControllerNode::ezAnimationControllerNode() = default;
+ezAnimationControllerNode::~ezAnimationControllerNode() = default;
 
 float ezSampleAnimGraphNode::UpdateWeight(ezTime tDiff)
 {

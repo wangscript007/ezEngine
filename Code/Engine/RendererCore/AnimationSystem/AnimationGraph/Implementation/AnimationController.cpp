@@ -1,16 +1,16 @@
 #include <RendererCorePCH.h>
 
 #include <Core/World/GameObject.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationGraph.h>
+#include <RendererCore/AnimationSystem/AnimationGraph/AnimationController.h>
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 #include <ozz/animation/runtime/blending_job.h>
 #include <ozz/animation/runtime/local_to_model_job.h>
 #include <ozz/animation/runtime/skeleton.h>
 
-ezAnimationGraph::ezAnimationGraph() = default;
-ezAnimationGraph::~ezAnimationGraph() = default;
+ezAnimationController::ezAnimationController() = default;
+ezAnimationController::~ezAnimationController() = default;
 
-void ezAnimationGraph::Update(ezTime tDiff)
+void ezAnimationController::Update(ezTime tDiff)
 {
   ezResourceLock<ezSkeletonResource> pSkeleton(m_hSkeleton, ezResourceAcquireMode::BlockTillLoaded_NeverFail);
   if (pSkeleton.GetAcquireResult() != ezResourceAcquireResult::Final)
@@ -64,7 +64,7 @@ void ezAnimationGraph::Update(ezTime tDiff)
   m_bFinalized = false;
 }
 
-void ezAnimationGraph::Finalize(const ezSkeletonResource* pSkeleton)
+void ezAnimationController::Finalize(const ezSkeletonResource* pSkeleton)
 {
   if (m_bFinalized)
     return;
@@ -85,7 +85,7 @@ void ezAnimationGraph::Finalize(const ezSkeletonResource* pSkeleton)
   }
 }
 
-void ezAnimationGraph::SendResultTo(ezGameObject* pObject)
+void ezAnimationController::SendResultTo(ezGameObject* pObject)
 {
   ezResourceLock<ezSkeletonResource> pSkeleton(m_hSkeleton, ezResourceAcquireMode::BlockTillLoaded_NeverFail);
   if (pSkeleton.GetAcquireResult() != ezResourceAcquireResult::Final)

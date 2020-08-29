@@ -9,30 +9,30 @@
 #include <ozz/base/maths/soa_transform.h>
 
 class ezSkeletonResource;
-class ezAnimationGraph;
+class ezAnimationController;
 using ezAnimationClipResourceHandle = ezTypedResourceHandle<class ezAnimationClipResource>;
 
-class EZ_RENDERERCORE_DLL ezAnimationGraphNode : public ezReflectedClass
+class EZ_RENDERERCORE_DLL ezAnimationControllerNode : public ezReflectedClass
 {
-  EZ_ADD_DYNAMIC_REFLECTION(ezAnimationGraphNode, ezReflectedClass);
+  EZ_ADD_DYNAMIC_REFLECTION(ezAnimationControllerNode, ezReflectedClass);
 
 public:
-  ezAnimationGraphNode();
-  virtual ~ezAnimationGraphNode();
+  ezAnimationControllerNode();
+  virtual ~ezAnimationControllerNode();
 
   virtual float UpdateWeight(ezTime tDiff) = 0;
   virtual void Step(ezTime tDiff, const ezSkeletonResource* pSkeleton) = 0;
 
 protected:
-  friend ezAnimationGraph;
+  friend ezAnimationController;
 
-  ezAnimationGraph* m_pOwner = nullptr;
+  ezAnimationController* m_pOwner = nullptr;
   ozz::vector<ozz::math::SoaTransform> m_ozzLocalTransforms;
 };
 
-class EZ_RENDERERCORE_DLL ezSampleAnimGraphNode : public ezAnimationGraphNode
+class EZ_RENDERERCORE_DLL ezSampleAnimGraphNode : public ezAnimationControllerNode
 {
-  EZ_ADD_DYNAMIC_REFLECTION(ezSampleAnimGraphNode, ezAnimationGraphNode);
+  EZ_ADD_DYNAMIC_REFLECTION(ezSampleAnimGraphNode, ezAnimationControllerNode);
 
 public:
   virtual float UpdateWeight(ezTime tDiff) override;

@@ -3,7 +3,7 @@
 #include <Core/ResourceManager/ResourceHandle.h>
 #include <Core/World/ComponentManager.h>
 #include <GameEngine/Animation/Skeletal/AnimationControllerComponent.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationGraph.h>
+#include <RendererCore/AnimationSystem/AnimationGraph/AnimationController.h>
 
 using ezSkeletonResourceHandle = ezTypedResourceHandle<class ezSkeletonResource>;
 
@@ -48,7 +48,7 @@ protected:
 
   ezSkeletonResourceHandle m_hSkeleton;
 
-  ezAnimationGraph m_AnimationGraph;
+  ezAnimationController m_AnimationGraph;
 
   ezAnimationClipResourceHandle m_hAnimationClip0;
   ezAnimationClipResourceHandle m_hAnimationClip1;

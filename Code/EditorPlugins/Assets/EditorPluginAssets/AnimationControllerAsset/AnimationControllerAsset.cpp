@@ -4,9 +4,10 @@
 #include <EditorFramework/EditorApp/EditorApp.moc.h>
 #include <EditorPluginAssets/AnimationControllerAsset/AnimationControllerAsset.h>
 #include <EditorPluginAssets/AnimationControllerAsset/AnimationControllerAssetManager.h>
+#include <Foundation/Serialization/BinarySerializer.h>
 #include <Foundation/Utilities/Node.h>
 #include <GuiFoundation/NodeEditor/NodeScene.moc.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationGraphNode.h>
+#include <RendererCore/AnimationSystem/AnimationGraph/AnimationControllerNode.h>
 #include <ToolsFoundation/Command/NodeCommands.h>
 #include <ToolsFoundation/Serialization/DocumentObjectConverter.h>
 
@@ -16,71 +17,73 @@ EZ_END_DYNAMIC_REFLECTED_TYPE;
 bool ezAnimationControllerNodeManager::InternalIsNode(const ezDocumentObject* pObject) const
 {
   auto pType = pObject->GetTypeAccessor().GetType();
-  return pType->IsDerivedFrom<ezAnimationGraphNode>();
+  return pType->IsDerivedFrom<ezAnimationControllerNode>();
 }
 
 void ezAnimationControllerNodeManager::InternalCreatePins(const ezDocumentObject* pObject, NodeInternal& node)
 {
-  auto pType = pObject->GetTypeAccessor().GetType();
-  if (!pType->IsDerivedFrom<ezAnimationGraphNode>())
-    return;
+  // currently no connections in the graph
 
-  ezHybridArray<ezAbstractProperty*, 32> properties;
-  pType->GetAllProperties(properties);
+  //auto pType = pObject->GetTypeAccessor().GetType();
+  //if (!pType->IsDerivedFrom<ezAnimationGraphNode>())
+  //  return;
 
-  for (ezAbstractProperty* pProp : properties)
-  {
-    if (pProp->GetCategory() != ezPropertyCategory::Member)
-      continue;
+  //ezHybridArray<ezAbstractProperty*, 32> properties;
+  //pType->GetAllProperties(properties);
 
-    if (!pProp->GetSpecificType()->IsDerivedFrom<ezNodePin>())
-      continue;
+  //for (ezAbstractProperty* pProp : properties)
+  //{
+  //  if (pProp->GetCategory() != ezPropertyCategory::Member)
+  //    continue;
 
-    ezColor pinColor = ezColor::Grey;
-    if (const ezColorAttribute* pAttr = pProp->GetAttributeByType<ezColorAttribute>())
-    {
-      pinColor = pAttr->GetColor();
-    }
+  //  if (!pProp->GetSpecificType()->IsDerivedFrom<ezNodePin>())
+  //    continue;
 
-    if (pProp->GetSpecificType()->IsDerivedFrom<ezInputNodePin>())
-    {
-      ezPin* pPin = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Input, pProp->GetPropertyName(), pinColor, pObject);
-      node.m_Inputs.PushBack(pPin);
-    }
-    else if (pProp->GetSpecificType()->IsDerivedFrom<ezOutputNodePin>())
-    {
-      ezPin* pPin = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Output, pProp->GetPropertyName(), pinColor, pObject);
-      node.m_Outputs.PushBack(pPin);
-    }
-    else if (pProp->GetSpecificType()->IsDerivedFrom<ezPassThroughNodePin>())
-    {
-      ezPin* pPinIn = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Input, pProp->GetPropertyName(), pinColor, pObject);
-      node.m_Inputs.PushBack(pPinIn);
-      ezPin* pPinOut = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Output, pProp->GetPropertyName(), pinColor, pObject);
-      node.m_Outputs.PushBack(pPinOut);
-    }
-  }
+  //  ezColor pinColor = ezColor::Grey;
+  //  if (const ezColorAttribute* pAttr = pProp->GetAttributeByType<ezColorAttribute>())
+  //  {
+  //    pinColor = pAttr->GetColor();
+  //  }
+
+  //  if (pProp->GetSpecificType()->IsDerivedFrom<ezInputNodePin>())
+  //  {
+  //    ezPin* pPin = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Input, pProp->GetPropertyName(), pinColor, pObject);
+  //    node.m_Inputs.PushBack(pPin);
+  //  }
+  //  else if (pProp->GetSpecificType()->IsDerivedFrom<ezOutputNodePin>())
+  //  {
+  //    ezPin* pPin = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Output, pProp->GetPropertyName(), pinColor, pObject);
+  //    node.m_Outputs.PushBack(pPin);
+  //  }
+  //  else if (pProp->GetSpecificType()->IsDerivedFrom<ezPassThroughNodePin>())
+  //  {
+  //    ezPin* pPinIn = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Input, pProp->GetPropertyName(), pinColor, pObject);
+  //    node.m_Inputs.PushBack(pPinIn);
+  //    ezPin* pPinOut = EZ_DEFAULT_NEW(ezPin, ezPin::Type::Output, pProp->GetPropertyName(), pinColor, pObject);
+  //    node.m_Outputs.PushBack(pPinOut);
+  //  }
+  //}
 }
 
 void ezAnimationControllerNodeManager::InternalDestroyPins(const ezDocumentObject* pObject, NodeInternal& node)
 {
-  for (ezPin* pPin : node.m_Inputs)
-  {
-    EZ_DEFAULT_DELETE(pPin);
-  }
-  node.m_Inputs.Clear();
-  for (ezPin* pPin : node.m_Outputs)
-  {
-    EZ_DEFAULT_DELETE(pPin);
-  }
-  node.m_Outputs.Clear();
+  //for (ezPin* pPin : node.m_Inputs)
+  //{
+  //  EZ_DEFAULT_DELETE(pPin);
+  //}
+  //node.m_Inputs.Clear();
+  //for (ezPin* pPin : node.m_Outputs)
+  //{
+  //  EZ_DEFAULT_DELETE(pPin);
+  //}
+  //node.m_Outputs.Clear();
 }
 
 
 void ezAnimationControllerNodeManager::GetCreateableTypes(ezHybridArray<const ezRTTI*, 32>& Types) const
 {
   ezSet<const ezRTTI*> typeSet;
-  ezReflectionUtils::GatherTypesDerivedFromClass(ezGetStaticRTTI<ezAnimationGraphNode>(), typeSet, false);
+  ezReflectionUtils::GatherTypesDerivedFromClass(ezGetStaticRTTI<ezAnimationControllerNode>(), typeSet, false);
 
   Types.Clear();
   for (auto pType : typeSet)
@@ -94,10 +97,12 @@ void ezAnimationControllerNodeManager::GetCreateableTypes(ezHybridArray<const ez
 
 ezStatus ezAnimationControllerNodeManager::InternalCanConnect(const ezPin* pSource, const ezPin* pTarget, CanConnectResult& out_Result) const
 {
-  out_Result = CanConnectResult::ConnectNto1;
+  out_Result = CanConnectResult::ConnectNever;
 
-  if (!pTarget->GetConnections().IsEmpty())
-    return ezStatus("Only one connection can be made to in input pin!");
+  //out_Result = CanConnectResult::ConnectNto1;
+
+  //if (!pTarget->GetConnections().IsEmpty())
+  //  return ezStatus("Only one connection can be made to in input pin!");
 
   return ezStatus(EZ_SUCCESS);
 }
@@ -109,61 +114,40 @@ ezAnimationControllerAssetDocument::ezAnimationControllerAssetDocument(const cha
 
 ezStatus ezAnimationControllerAssetDocument::InternalTransformAsset(ezStreamWriter& stream, const char* szOutputTag, const ezPlatformProfile* pAssetProfile, const ezAssetFileHeader& AssetHeader, ezBitflags<ezTransformFlags> transformFlags)
 {
-  const ezUInt8 uiVersion = 1;
-  stream << uiVersion;
 
-  //ezAbstractObjectGraph graph;
-  //ezRttiConverterContext context;
-  //ezRttiConverterWriter rttiConverter(&graph, &context, true, true);
-  //ezDocumentObjectConverterWriter objectConverter(&graph, GetObjectManager());
+  auto& children = GetObjectManager()->GetRootObject()->GetChildren();
+  for (ezDocumentObject* pObject : children)
+  {
+    auto pType = pObject->GetTypeAccessor().GetType();
+    if (pType->IsDerivedFrom<ezAnimationControllerNode>())
+    {
+      
+    }
+  }
 
-  //auto& children = GetObjectManager()->GetRootObject()->GetChildren();
-  //for (ezDocumentObject* pObject : children)
-  //{
-  //  auto pType = pObject->GetTypeAccessor().GetType();
-  //  if (pType->IsDerivedFrom<ezAnimationGraphNode>())
-  //  {
-  //    objectConverter.AddObjectToGraph(pObject, "Pass");
-  //  }
-  //  else if (pType->IsDerivedFrom<ezExtractor>())
-  //  {
-  //    objectConverter.AddObjectToGraph(pObject, "Extractor");
-  //  }
-  //}
-
-  //ezDocumentNodeManager* pManager = static_cast<ezDocumentNodeManager*>(GetObjectManager());
-  //pManager->AttachMetaDataBeforeSaving(graph);
-
-  //ezMemoryStreamStorage storage;
-  //ezMemoryStreamWriter writer(&storage);
-  //ezAbstractGraphBinarySerializer::Write(writer, &graph);
-
-  //ezUInt32 uiSize = storage.GetStorageSize();
-  //stream << uiSize;
-  //stream.WriteBytes(storage.GetData(), uiSize);
   return ezStatus(EZ_SUCCESS);
 }
 
 void ezAnimationControllerAssetDocument::InternalGetMetaDataHash(const ezDocumentObject* pObject, ezUInt64& inout_uiHash) const
 {
-  const ezDocumentNodeManager* pManager = static_cast<const ezDocumentNodeManager*>(GetObjectManager());
-  if (pManager->IsNode(pObject))
-  {
-    auto outputs = pManager->GetOutputPins(pObject);
-    for (const ezPin* pPinSource : outputs)
-    {
-      auto inputs = pPinSource->GetConnections();
-      for (const ezConnection* pConnection : inputs)
-      {
-        const ezPin* pPinTarget = pConnection->GetTargetPin();
+  //const ezDocumentNodeManager* pManager = static_cast<const ezDocumentNodeManager*>(GetObjectManager());
+  //if (pManager->IsNode(pObject))
+  //{
+  //  auto outputs = pManager->GetOutputPins(pObject);
+  //  for (const ezPin* pPinSource : outputs)
+  //  {
+  //    auto inputs = pPinSource->GetConnections();
+  //    for (const ezConnection* pConnection : inputs)
+  //    {
+  //      const ezPin* pPinTarget = pConnection->GetTargetPin();
 
-        inout_uiHash = ezHashingUtils::xxHash64(&pPinSource->GetParent()->GetGuid(), sizeof(ezUuid), inout_uiHash);
-        inout_uiHash = ezHashingUtils::xxHash64(&pPinTarget->GetParent()->GetGuid(), sizeof(ezUuid), inout_uiHash);
-        inout_uiHash = ezHashingUtils::xxHash64(pPinSource->GetName(), ezStringUtils::GetStringElementCount(pPinSource->GetName()), inout_uiHash);
-        inout_uiHash = ezHashingUtils::xxHash64(pPinTarget->GetName(), ezStringUtils::GetStringElementCount(pPinTarget->GetName()), inout_uiHash);
-      }
-    }
-  }
+  //      inout_uiHash = ezHashingUtils::xxHash64(&pPinSource->GetParent()->GetGuid(), sizeof(ezUuid), inout_uiHash);
+  //      inout_uiHash = ezHashingUtils::xxHash64(&pPinTarget->GetParent()->GetGuid(), sizeof(ezUuid), inout_uiHash);
+  //      inout_uiHash = ezHashingUtils::xxHash64(pPinSource->GetName(), ezStringUtils::GetStringElementCount(pPinSource->GetName()), inout_uiHash);
+  //      inout_uiHash = ezHashingUtils::xxHash64(pPinTarget->GetName(), ezStringUtils::GetStringElementCount(pPinTarget->GetName()), inout_uiHash);
+  //    }
+  //  }
+  //}
 }
 
 void ezAnimationControllerAssetDocument::AttachMetaDataBeforeSaving(ezAbstractObjectGraph& graph) const
