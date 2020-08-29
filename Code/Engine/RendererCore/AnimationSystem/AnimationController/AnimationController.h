@@ -7,11 +7,13 @@
 #include <Foundation/Containers/DynamicArray.h>
 #include <Foundation/Memory/AllocatorWrapper.h>
 #include <Foundation/Types/UniquePtr.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationControllerNode.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationControllerNode.h>
 #include <ozz/base/containers/vector.h>
 #include <ozz/base/maths/soa_transform.h>
 
 class ezGameObject;
+class ezStreamWriter;
+class ezStreamReader;
 
 using ezSkeletonResourceHandle = ezTypedResourceHandle<class ezSkeletonResource>;
 
@@ -31,6 +33,9 @@ public:
   ezSkeletonResourceHandle m_hSkeleton;
 
   ezBlackboard m_Blackboard;
+
+  ezResult Serialize(ezStreamWriter& stream) const;
+  ezResult Deserialize(ezStreamReader& stream);
 
 private:
   ozz::vector<ozz::math::SoaTransform> m_ozzLocalTransforms;

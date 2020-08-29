@@ -10,6 +10,8 @@
 
 class ezSkeletonResource;
 class ezAnimationController;
+class ezStreamWriter;
+class ezStreamReader;
 using ezAnimationClipResourceHandle = ezTypedResourceHandle<class ezAnimationClipResource>;
 
 class EZ_RENDERERCORE_DLL ezAnimationControllerNode : public ezReflectedClass
@@ -22,6 +24,9 @@ public:
 
   virtual float UpdateWeight(ezTime tDiff) = 0;
   virtual void Step(ezTime tDiff, const ezSkeletonResource* pSkeleton) = 0;
+
+  virtual ezResult SerializeNode(ezStreamWriter& stream) const = 0;
+  virtual ezResult DeserializeNode(ezStreamReader& stream) = 0;
 
 protected:
   friend ezAnimationController;
@@ -43,6 +48,9 @@ public:
 
   void SetBlackboardEntry(const char* szFile); // [ property ]
   const char* GetBlackboardEntry() const;      // [ property ]
+
+  virtual ezResult SerializeNode(ezStreamWriter& stream) const override;
+  virtual ezResult DeserializeNode(ezStreamReader& stream) override;
 
   ezTime m_RampUp;   // [ property ]
   ezTime m_RampDown; // [ property ]

@@ -1,8 +1,8 @@
 #include <RendererCorePCH.h>
 
 #include <AnimationSystem/AnimationClipResource.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationController.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationControllerNode.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationController.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationControllerNode.h>
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 #include <ozz/animation/runtime/sampling_job.h>
 #include <ozz/animation/runtime/skeleton.h>
@@ -27,6 +27,18 @@ EZ_END_DYNAMIC_REFLECTED_TYPE;
 
 ezAnimationControllerNode::ezAnimationControllerNode() = default;
 ezAnimationControllerNode::~ezAnimationControllerNode() = default;
+
+ezResult ezAnimationControllerNode::SerializeNode(ezStreamWriter& stream) const
+{
+  stream.WriteVersion(1);
+  return EZ_SUCCESS;
+}
+
+ezResult ezAnimationControllerNode::DeserializeNode(ezStreamReader& stream)
+{
+  stream.ReadVersion(1);
+  return EZ_SUCCESS;
+}
 
 float ezSampleAnimGraphNode::UpdateWeight(ezTime tDiff)
 {
@@ -117,4 +129,34 @@ void ezSampleAnimGraphNode::SetBlackboardEntry(const char* szFile)
 const char* ezSampleAnimGraphNode::GetBlackboardEntry() const
 {
   return m_sBlackboardEntry.GetData();
+}
+
+ezResult ezSampleAnimGraphNode::SerializeNode(ezStreamWriter& stream) const
+{
+  stream.WriteVersion(1);
+
+  EZ_SUCCEED_OR_RETURN(SUPER::SerializeNode(stream));
+
+  stream << m_sBlackboardEntry;
+  stream << m_RampUp;
+  stream << m_RampDown;
+  stream << m_PlaybackTime;
+  stream << m_hAnimationClip;
+
+  return EZ_SUCCESS;
+}
+
+ezResult ezSampleAnimGraphNode::DeserializeNode(ezStreamReader& stream)
+{
+  stream.ReadVersion(1);
+
+  EZ_SUCCEED_OR_RETURN(SUPER::DeserializeNode(stream));
+
+  stream >> m_sBlackboardEntry;
+  stream >> m_RampUp;
+  stream >> m_RampDown;
+  stream >> m_PlaybackTime;
+  stream >> m_hAnimationClip;
+
+  return EZ_SUCCESS;
 }

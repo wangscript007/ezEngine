@@ -1,7 +1,7 @@
 #include <RendererCorePCH.h>
 
 #include <Core/World/GameObject.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationController.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationController.h>
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 #include <ozz/animation/runtime/blending_job.h>
 #include <ozz/animation/runtime/local_to_model_job.h>
@@ -98,4 +98,50 @@ void ezAnimationController::SendResultTo(ezGameObject* pObject)
   msg.m_ModelTransforms = m_ModelSpaceTransforms;
 
   pObject->SendMessageRecursive(msg);
+}
+
+ezResult ezAnimationController::Serialize(ezStreamWriter& stream) const
+{
+  stream.WriteVersion(1);
+
+  const ezUInt32 uiNumNodes = m_Nodes.GetCount();
+  stream << uiNumNodes;
+
+  for (const auto& node : m_Nodes)
+  {
+    stream << node->GetDynamicRTTI()->GetTypeName();
+
+    node->SerializeNode(stream);
+  }
+
+  stream << m_hSkeleton;
+
+  EZ_SUCCEED_OR_RETURN(m_Blackboard.Serialize(stream));
+
+  return EZ_SUCCESS;
+}
+
+ezResult ezAnimationController::Deserialize(ezStreamReader& stream)
+{
+  stream.ReadVersion(1);
+
+  ezUInt32 uiNumNodes = 0;
+  stream >> uiNumNodes;
+  m_Nodes.SetCount(uiNumNodes);
+
+  ezStringBuilder sTypeName;
+
+  for (auto& node : m_Nodes)
+  {
+    stream >> sTypeName;
+    node = std::move(ezRTTI::FindTypeByName(sTypeName)->GetAllocator()->Allocate<ezAnimationControllerNode>());
+
+    node->DeserializeNode(stream);
+  }
+
+  stream >> m_hSkeleton;
+
+  EZ_SUCCEED_OR_RETURN(m_Blackboard.Deserialize(stream));
+
+  return EZ_SUCCESS;
 }

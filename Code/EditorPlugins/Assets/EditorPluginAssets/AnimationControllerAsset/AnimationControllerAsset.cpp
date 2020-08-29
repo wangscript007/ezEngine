@@ -4,10 +4,13 @@
 #include <EditorFramework/EditorApp/EditorApp.moc.h>
 #include <EditorPluginAssets/AnimationControllerAsset/AnimationControllerAsset.h>
 #include <EditorPluginAssets/AnimationControllerAsset/AnimationControllerAssetManager.h>
+#include <Foundation/Serialization/AbstractObjectGraph.h>
 #include <Foundation/Serialization/BinarySerializer.h>
+#include <Foundation/Serialization/RttiConverter.h>
 #include <Foundation/Utilities/Node.h>
 #include <GuiFoundation/NodeEditor/NodeScene.moc.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationControllerNode.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationController.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationControllerNode.h>
 #include <ToolsFoundation/Command/NodeCommands.h>
 #include <ToolsFoundation/Serialization/DocumentObjectConverter.h>
 
@@ -24,14 +27,14 @@ void ezAnimationControllerNodeManager::InternalCreatePins(const ezDocumentObject
 {
   // currently no connections in the graph
 
-  //auto pType = pObject->GetTypeAccessor().GetType();
-  //if (!pType->IsDerivedFrom<ezAnimationGraphNode>())
+  // auto pType = pObject->GetTypeAccessor().GetType();
+  // if (!pType->IsDerivedFrom<ezAnimationGraphNode>())
   //  return;
 
-  //ezHybridArray<ezAbstractProperty*, 32> properties;
-  //pType->GetAllProperties(properties);
+  // ezHybridArray<ezAbstractProperty*, 32> properties;
+  // pType->GetAllProperties(properties);
 
-  //for (ezAbstractProperty* pProp : properties)
+  // for (ezAbstractProperty* pProp : properties)
   //{
   //  if (pProp->GetCategory() != ezPropertyCategory::Member)
   //    continue;
@@ -67,16 +70,16 @@ void ezAnimationControllerNodeManager::InternalCreatePins(const ezDocumentObject
 
 void ezAnimationControllerNodeManager::InternalDestroyPins(const ezDocumentObject* pObject, NodeInternal& node)
 {
-  //for (ezPin* pPin : node.m_Inputs)
+  // for (ezPin* pPin : node.m_Inputs)
   //{
   //  EZ_DEFAULT_DELETE(pPin);
   //}
-  //node.m_Inputs.Clear();
-  //for (ezPin* pPin : node.m_Outputs)
+  // node.m_Inputs.Clear();
+  // for (ezPin* pPin : node.m_Outputs)
   //{
   //  EZ_DEFAULT_DELETE(pPin);
   //}
-  //node.m_Outputs.Clear();
+  // node.m_Outputs.Clear();
 }
 
 
@@ -99,9 +102,9 @@ ezStatus ezAnimationControllerNodeManager::InternalCanConnect(const ezPin* pSour
 {
   out_Result = CanConnectResult::ConnectNever;
 
-  //out_Result = CanConnectResult::ConnectNto1;
+  // out_Result = CanConnectResult::ConnectNto1;
 
-  //if (!pTarget->GetConnections().IsEmpty())
+  // if (!pTarget->GetConnections().IsEmpty())
   //  return ezStatus("Only one connection can be made to in input pin!");
 
   return ezStatus(EZ_SUCCESS);
@@ -114,24 +117,49 @@ ezAnimationControllerAssetDocument::ezAnimationControllerAssetDocument(const cha
 
 ezStatus ezAnimationControllerAssetDocument::InternalTransformAsset(ezStreamWriter& stream, const char* szOutputTag, const ezPlatformProfile* pAssetProfile, const ezAssetFileHeader& AssetHeader, ezBitflags<ezTransformFlags> transformFlags)
 {
+  ezAbstractObjectGraph graph;
 
-  auto& children = GetObjectManager()->GetRootObject()->GetChildren();
-  for (ezDocumentObject* pObject : children)
+  // serialize all the document objects to the abstract graph
   {
-    auto pType = pObject->GetTypeAccessor().GetType();
-    if (pType->IsDerivedFrom<ezAnimationControllerNode>())
+    ezDocumentObjectConverterWriter writer(&graph, GetObjectManager());
+
+    auto& children = GetObjectManager()->GetRootObject()->GetChildren();
+    for (ezDocumentObject* pObject : children)
     {
-      
+      auto pType = pObject->GetTypeAccessor().GetType();
+      if (pType->IsDerivedFrom<ezAnimationControllerNode>())
+      {
+        writer.AddObjectToGraph(pObject, "AnimationControllerNode");
+      }
     }
   }
 
-  return ezStatus(EZ_SUCCESS);
+  ezAnimationController animController;
+
+  // create the actual types in the animController
+  {
+    ezRttiConverterContext context;
+    ezRttiConverterReader reader(&graph, &context);
+
+    for (auto itNode : graph.GetAllNodes())
+    {
+      ezAnimationControllerNode* pNode = (ezAnimationControllerNode*)reader.CreateObjectFromNode(itNode.Value());
+      ezUniquePtr<ezAnimationControllerNode> pUniqueNode;
+      ezInternal::NewInstance newInstance(pNode, ezFoundation::GetDefaultAllocator());
+
+      animController.m_Nodes.PushBack(newInstance);
+    }
+  }
+
+  // TODO: ezAnimationControllerResourceDescriptor
+
+  return animController.Serialize(stream);
 }
 
 void ezAnimationControllerAssetDocument::InternalGetMetaDataHash(const ezDocumentObject* pObject, ezUInt64& inout_uiHash) const
 {
-  //const ezDocumentNodeManager* pManager = static_cast<const ezDocumentNodeManager*>(GetObjectManager());
-  //if (pManager->IsNode(pObject))
+  // const ezDocumentNodeManager* pManager = static_cast<const ezDocumentNodeManager*>(GetObjectManager());
+  // if (pManager->IsNode(pObject))
   //{
   //  auto outputs = pManager->GetOutputPins(pObject);
   //  for (const ezPin* pPinSource : outputs)

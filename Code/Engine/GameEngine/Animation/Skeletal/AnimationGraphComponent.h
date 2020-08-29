@@ -3,7 +3,7 @@
 #include <Core/ResourceManager/ResourceHandle.h>
 #include <Core/World/ComponentManager.h>
 #include <GameEngine/Animation/Skeletal/AnimationControllerComponent.h>
-#include <RendererCore/AnimationSystem/AnimationGraph/AnimationController.h>
+#include <RendererCore/AnimationSystem/AnimationController/AnimationController.h>
 
 using ezSkeletonResourceHandle = ezTypedResourceHandle<class ezSkeletonResource>;
 
