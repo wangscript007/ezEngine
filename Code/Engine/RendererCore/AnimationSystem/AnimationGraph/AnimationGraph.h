@@ -3,6 +3,7 @@
 #include <RendererCore/RendererCoreDLL.h>
 
 #include <Core/ResourceManager/ResourceHandle.h>
+#include <Core/Utils/Blackboard.h>
 #include <Foundation/Containers/DynamicArray.h>
 #include <Foundation/Memory/AllocatorWrapper.h>
 #include <Foundation/Types/UniquePtr.h>
@@ -28,6 +29,8 @@ public:
   ezDynamicArray<ezUniquePtr<ezAnimationGraphNode>> m_Nodes;
 
   ezSkeletonResourceHandle m_hSkeleton;
+
+  ezBlackboard m_Blackboard;
 
 private:
   ozz::vector<ozz::math::SoaTransform> m_ozzLocalTransforms;

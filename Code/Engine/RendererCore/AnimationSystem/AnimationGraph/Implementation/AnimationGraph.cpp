@@ -20,13 +20,33 @@ void ezAnimationGraph::Update(ezTime tDiff)
 
   ezHybridArray<ozz::animation::BlendingJob::Layer, 8> layers;
 
+  float fTotalWeight = 0.0f;
   for (const auto& pNode : m_Nodes)
   {
+    pNode->m_pOwner = this;
+    const float fWeight = pNode->UpdateWeight(tDiff);
+
+    if (fWeight <= 0.0f)
+      continue;
+
+    fTotalWeight += fWeight;
+
     pNode->Step(tDiff, pSkeleton.GetPointer());
 
     auto& l = layers.ExpandAndGetRef();
     l.transform = make_span(pNode->m_ozzLocalTransforms);
-    l.weight = 1.0f / m_Nodes.GetCount();
+    l.weight = fWeight;
+  }
+
+  // normalize the blending weights
+  if (fTotalWeight > 1.0f)
+  {
+    const float fInvWeight = 1.0f / fTotalWeight;
+
+    for (auto& layer : layers)
+    {
+      layer.weight *= fInvWeight;
+    }
   }
 
   {

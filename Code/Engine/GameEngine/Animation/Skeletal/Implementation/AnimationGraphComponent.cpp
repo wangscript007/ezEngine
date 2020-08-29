@@ -1,7 +1,9 @@
 #include <GameEnginePCH.h>
 
+#include <Core/Input/InputManager.h>
 #include <Core/WorldSerializer/WorldReader.h>
 #include <Core/WorldSerializer/WorldWriter.h>
+#include <Foundation/Strings/HashedString.h>
 #include <GameEngine/Animation/Skeletal/AnimationGraphComponent.h>
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 
@@ -152,18 +154,47 @@ void ezAnimationGraphComponent::Update()
 
   m_AnimationGraph.Update(GetWorld()->GetClock().GetTimeDiff());
   m_AnimationGraph.SendResultTo(GetOwner());
+
+  float fValue;
+
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_NegX, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Left", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_PosX, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Right", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_NegY, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Backwards", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_LeftStick_PosY, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Forwards", fValue);
+  ezInputManager::GetInputSlotState(ezInputSlot_Controller0_ButtonA, &fValue);
+  m_AnimationGraph.m_Blackboard.SetEntryValue("Idle", fValue);
 }
 
 void ezAnimationGraphComponent::OnSimulationStarted()
 {
   SUPER::OnSimulationStarted();
 
+  ezHashedString hs;
+
   m_AnimationGraph.m_hSkeleton = m_hSkeleton;
+
+  hs.Assign("Left");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Right");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Forwards");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Backwards");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
+  hs.Assign("Idle");
+  m_AnimationGraph.m_Blackboard.RegisterEntry(hs, 0.0f);
 
   if (m_hAnimationClip0.IsValid())
   {
     ezUniquePtr<ezSampleAnimGraphNode> pNode = EZ_DEFAULT_NEW(ezSampleAnimGraphNode);
     pNode->m_hAnimationClip = m_hAnimationClip0;
+    pNode->m_RampUp = ezTime::Seconds(0.2);
+    pNode->m_RampDown = ezTime::Seconds(0.4);
+    pNode->m_sBlackboardEntry = "Forwards";
     m_AnimationGraph.m_Nodes.PushBack(std::move(pNode));
   }
 
@@ -171,6 +202,9 @@ void ezAnimationGraphComponent::OnSimulationStarted()
   {
     ezUniquePtr<ezSampleAnimGraphNode> pNode = EZ_DEFAULT_NEW(ezSampleAnimGraphNode);
     pNode->m_hAnimationClip = m_hAnimationClip1;
+    pNode->m_RampUp = ezTime::Seconds(0.2);
+    pNode->m_RampDown = ezTime::Seconds(0.4);
+    pNode->m_sBlackboardEntry = "Backwards";
     m_AnimationGraph.m_Nodes.PushBack(std::move(pNode));
   }
 
@@ -178,6 +212,9 @@ void ezAnimationGraphComponent::OnSimulationStarted()
   {
     ezUniquePtr<ezSampleAnimGraphNode> pNode = EZ_DEFAULT_NEW(ezSampleAnimGraphNode);
     pNode->m_hAnimationClip = m_hAnimationClip2;
+    pNode->m_RampUp = ezTime::Seconds(0.5);
+    pNode->m_RampDown = ezTime::Seconds(0.3);
+    pNode->m_sBlackboardEntry = "Idle";
     m_AnimationGraph.m_Nodes.PushBack(std::move(pNode));
   }
 }
