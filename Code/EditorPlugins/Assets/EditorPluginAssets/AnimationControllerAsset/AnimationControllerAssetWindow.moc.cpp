@@ -1,7 +1,7 @@
 #include <EditorPluginAssetsPCH.h>
 
-#include <EditorPluginAssets/RenderPipelineAsset/RenderPipelineAssetScene.moc.h>
-#include <EditorPluginAssets/RenderPipelineAsset/RenderPipelineAssetWindow.moc.h>
+#include <EditorPluginAssets/AnimationControllerAsset/AnimationControllerAssetScene.moc.h>
+#include <EditorPluginAssets/AnimationControllerAsset/AnimationControllerAssetWindow.moc.h>
 #include <GuiFoundation/ActionViews/MenuBarActionMapView.moc.h>
 #include <GuiFoundation/ActionViews/ToolBarActionMapView.moc.h>
 #include <GuiFoundation/DockPanels/DocumentPanel.moc.h>
@@ -13,7 +13,7 @@
 #include <QLayout>
 
 
-ezQtRenderPipelineAssetDocumentWindow::ezQtRenderPipelineAssetDocumentWindow(ezDocument* pDocument)
+ezQtAnimationControllerAssetDocumentWindow::ezQtAnimationControllerAssetDocumentWindow(ezDocument* pDocument)
   : ezQtDocumentWindow(pDocument)
 {
 
@@ -21,7 +21,7 @@ ezQtRenderPipelineAssetDocumentWindow::ezQtRenderPipelineAssetDocumentWindow(ezD
   {
     ezQtMenuBarActionMapView* pMenuBar = static_cast<ezQtMenuBarActionMapView*>(menuBar());
     ezActionContext context;
-    context.m_sMapping = "RenderPipelineAssetMenuBar";
+    context.m_sMapping = "AnimationControllerAssetMenuBar";
     context.m_pDocument = pDocument;
     context.m_pWindow = this;
     pMenuBar->SetActionContext(context);
@@ -31,15 +31,15 @@ ezQtRenderPipelineAssetDocumentWindow::ezQtRenderPipelineAssetDocumentWindow(ezD
   {
     ezQtToolBarActionMapView* pToolBar = new ezQtToolBarActionMapView("Toolbar", this);
     ezActionContext context;
-    context.m_sMapping = "RenderPipelineAssetToolBar";
+    context.m_sMapping = "AnimationControllerAssetToolBar";
     context.m_pDocument = pDocument;
     context.m_pWindow = this;
     pToolBar->SetActionContext(context);
-    pToolBar->setObjectName("RenderPipelineAssetWindowToolBar");
+    pToolBar->setObjectName("AnimationControllerAssetWindowToolBar");
     addToolBar(pToolBar);
   }
 
-  m_pScene = new ezQtRenderPipelineAssetScene(this);
+  m_pScene = new ezQtAnimationControllerAssetScene(this);
   m_pScene->SetDocumentNodeManager(static_cast<const ezDocumentNodeManager*>(pDocument->GetObjectManager()));
   m_pView = new ezQtNodeView(this);
   m_pView->SetScene(m_pScene);
@@ -47,7 +47,7 @@ ezQtRenderPipelineAssetDocumentWindow::ezQtRenderPipelineAssetDocumentWindow(ezD
 
   {
     ezQtDocumentPanel* pPropertyPanel = new ezQtDocumentPanel(this);
-    pPropertyPanel->setObjectName("RenderPipelineAssetDockWidget");
+    pPropertyPanel->setObjectName("AnimationControllerAssetDockWidget");
     pPropertyPanel->setWindowTitle("Properties");
     pPropertyPanel->show();
 
@@ -60,4 +60,4 @@ ezQtRenderPipelineAssetDocumentWindow::ezQtRenderPipelineAssetDocumentWindow(ezD
   FinishWindowCreation();
 }
 
-ezQtRenderPipelineAssetDocumentWindow::~ezQtRenderPipelineAssetDocumentWindow() {}
+ezQtAnimationControllerAssetDocumentWindow::~ezQtAnimationControllerAssetDocumentWindow() {}

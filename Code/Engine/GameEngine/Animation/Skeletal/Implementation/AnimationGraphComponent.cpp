@@ -194,7 +194,7 @@ void ezAnimationGraphComponent::OnSimulationStarted()
     pNode->m_hAnimationClip = m_hAnimationClip0;
     pNode->m_RampUp = ezTime::Seconds(0.2);
     pNode->m_RampDown = ezTime::Seconds(0.4);
-    pNode->m_sBlackboardEntry = "Forwards";
+    pNode->SetBlackboardEntry("Forwards");
     m_AnimationGraph.m_Nodes.PushBack(std::move(pNode));
   }
 
@@ -204,7 +204,7 @@ void ezAnimationGraphComponent::OnSimulationStarted()
     pNode->m_hAnimationClip = m_hAnimationClip1;
     pNode->m_RampUp = ezTime::Seconds(0.2);
     pNode->m_RampDown = ezTime::Seconds(0.4);
-    pNode->m_sBlackboardEntry = "Backwards";
+    pNode->SetBlackboardEntry("Backwards");
     m_AnimationGraph.m_Nodes.PushBack(std::move(pNode));
   }
 
@@ -214,7 +214,7 @@ void ezAnimationGraphComponent::OnSimulationStarted()
     pNode->m_hAnimationClip = m_hAnimationClip2;
     pNode->m_RampUp = ezTime::Seconds(0.5);
     pNode->m_RampDown = ezTime::Seconds(0.3);
-    pNode->m_sBlackboardEntry = "Idle";
+    pNode->SetBlackboardEntry("Idle");
     m_AnimationGraph.m_Nodes.PushBack(std::move(pNode));
   }
 }

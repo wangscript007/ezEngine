@@ -38,13 +38,19 @@ public:
   virtual float UpdateWeight(ezTime tDiff) override;
   virtual void Step(ezTime ov, const ezSkeletonResource* pSkeleton) override;
 
+  void SetAnimationClip(const char* szFile); // [ property ]
+  const char* GetAnimationClip() const;      // [ property ]
+
+  void SetBlackboardEntry(const char* szFile); // [ property ]
+  const char* GetBlackboardEntry() const;      // [ property ]
+
+  ezTime m_RampUp;   // [ property ]
+  ezTime m_RampDown; // [ property ]
+
   ezAnimationClipResourceHandle m_hAnimationClip;
 
-  ezTempHashedString m_sBlackboardEntry;
-  ezTime m_RampUp;
-  ezTime m_RampDown;
-
 private:
+  ezHashedString m_sBlackboardEntry;
   ezTime m_PlaybackTime;
   ozz::animation::SamplingCache m_ozzSamplingCache;
   float m_fCurWeight = 0.0f;

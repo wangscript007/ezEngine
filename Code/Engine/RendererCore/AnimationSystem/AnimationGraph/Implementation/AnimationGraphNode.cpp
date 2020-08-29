@@ -12,6 +12,16 @@ EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezAnimationGraphNode, 1, ezRTTINoAllocator)
 EZ_END_DYNAMIC_REFLECTED_TYPE;
 
 EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezSampleAnimGraphNode, 1, ezRTTIDefaultAllocator<ezSampleAnimGraphNode>)
+{
+  EZ_BEGIN_PROPERTIES
+  {
+    EZ_ACCESSOR_PROPERTY("AnimationClip", GetAnimationClip, SetAnimationClip)->AddAttributes(new ezAssetBrowserAttribute("Animation Clip")),
+    EZ_ACCESSOR_PROPERTY("BlackboardEntry", GetBlackboardEntry, SetBlackboardEntry),
+    EZ_MEMBER_PROPERTY("RampUpTime", m_RampUp),
+    EZ_MEMBER_PROPERTY("RampDownTime", m_RampDown),
+  }
+  EZ_END_PROPERTIES;
+}
 EZ_END_DYNAMIC_REFLECTED_TYPE;
 // clang-format on
 
@@ -77,4 +87,34 @@ void ezSampleAnimGraphNode::Step(ezTime tDiff, const ezSkeletonResource* pSkelet
     EZ_ASSERT_DEBUG(job.Validate(), "");
     job.Run();
   }
+}
+
+void ezSampleAnimGraphNode::SetAnimationClip(const char* szFile)
+{
+  ezAnimationClipResourceHandle hResource;
+
+  if (!ezStringUtils::IsNullOrEmpty(szFile))
+  {
+    hResource = ezResourceManager::LoadResource<ezAnimationClipResource>(szFile);
+  }
+
+  m_hAnimationClip = hResource;
+}
+
+const char* ezSampleAnimGraphNode::GetAnimationClip() const
+{
+  if (!m_hAnimationClip.IsValid())
+    return "";
+
+  return m_hAnimationClip.GetResourceID();
+}
+
+void ezSampleAnimGraphNode::SetBlackboardEntry(const char* szFile)
+{
+  m_sBlackboardEntry.Assign(szFile);
+}
+
+const char* ezSampleAnimGraphNode::GetBlackboardEntry() const
+{
+  return m_sBlackboardEntry.GetData();
 }
