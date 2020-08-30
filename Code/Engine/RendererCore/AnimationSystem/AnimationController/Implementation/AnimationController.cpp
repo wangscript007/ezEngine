@@ -34,20 +34,25 @@ void ezAnimationController::Update(ezTime tDiff)
     pNode->Step(tDiff, pSkeleton.GetPointer());
 
     auto& l = layers.ExpandAndGetRef();
-    l.transform = make_span(pNode->m_ozzLocalTransforms);
     l.weight = fWeight;
+    l.transform = make_span(pNode->m_ozzLocalTransforms);
+
+    if (!pNode->m_ozzBlendWeightsSOA.empty())
+    {
+      l.joint_weights = make_span(pNode->m_ozzBlendWeightsSOA);
+    }
   }
 
   // normalize the blending weights
-  if (fTotalWeight > 1.0f)
-  {
-    const float fInvWeight = 1.0f / fTotalWeight;
+  // if (fTotalWeight > 1.0f)
+  //{
+  //  const float fInvWeight = 1.0f / fTotalWeight;
 
-    for (auto& layer : layers)
-    {
-      layer.weight *= fInvWeight;
-    }
-  }
+  //  for (auto& layer : layers)
+  //  {
+  //    layer.weight *= fInvWeight;
+  //  }
+  //}
 
   {
     m_ozzLocalTransforms.resize(pOzzSkeleton->num_soa_joints());

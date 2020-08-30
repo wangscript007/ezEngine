@@ -88,8 +88,7 @@ namespace ezModelImporter
   ezQuat ConvertAssimpType(const aiQuaternion& value) { return ezQuat(value.x, value.y, value.z, value.w); }
 
   template <typename assimpType, typename ezType>
-  void TryReadAssimpProperty(const char* pKey, unsigned int type, unsigned int idx, SemanticHint::Enum semantic, const aiMaterial& assimpMaterial,
-    Material& material, bool invert = false)
+  void TryReadAssimpProperty(const char* pKey, unsigned int type, unsigned int idx, SemanticHint::Enum semantic, const aiMaterial& assimpMaterial, Material& material, bool invert = false)
   {
     assimpType assimpValue;
     if (assimpMaterial.Get(pKey, type, idx, assimpValue) == AI_SUCCESS)
@@ -101,8 +100,7 @@ namespace ezModelImporter
     }
   }
 
-  void TryReadAssimpTextures(aiTextureType assimpTextureType, const char* semanticString, SemanticHint::Enum semanticHint,
-    const aiMaterial& assimpMaterial, Material& material)
+  void TryReadAssimpTextures(aiTextureType assimpTextureType, const char* semanticString, SemanticHint::Enum semanticHint, const aiMaterial& assimpMaterial, Material& material)
   {
     material.m_Textures.Reserve(material.m_Textures.GetCount() + assimpMaterial.GetTextureCount(assimpTextureType));
     for (unsigned int i = 0; i < assimpMaterial.GetTextureCount(assimpTextureType); ++i)
@@ -208,14 +206,12 @@ namespace ezModelImporter
       }
 
       if (assimpMesh->GetNumColorChannels() > 2)
-        ezLog::Warning("Mesh '{0}' in '{1}' has {2} sets of vertex colors, only the first two sets will be imported!", mesh->m_Name, szFileName,
-          assimpMesh->GetNumColorChannels());
+        ezLog::Warning("Mesh '{0}' in '{1}' has {2} sets of vertex colors, only the first two sets will be imported!", mesh->m_Name, szFileName, assimpMesh->GetNumColorChannels());
 
       ezUInt32 numColorChannels = ezMath::Min(assimpMesh->GetNumColorChannels(), 2u);
       for (ezUInt32 colorSet = 0; colorSet < numColorChannels; ++colorSet)
       {
-        VertexDataStream* colors =
-          mesh->AddDataStream(static_cast<ezGALVertexAttributeSemantic::Enum>(ezGALVertexAttributeSemantic::Color0 + colorSet), 4);
+        VertexDataStream* colors = mesh->AddDataStream(static_cast<ezGALVertexAttributeSemantic::Enum>(ezGALVertexAttributeSemantic::Color0 + colorSet), 4);
         ezArrayPtr<char> assimpColorsPtr(reinterpret_cast<char*>(assimpMesh->mColors[colorSet]), assimpMesh->mNumVertices * sizeof(ezVec4));
         colors->AddValues(assimpColorsPtr);
         vertexDataStreams.PushBack(colors);
@@ -239,13 +235,11 @@ namespace ezModelImporter
       {
         unsigned int texcoordDimensionality = assimpMesh->mNumUVComponents[texcoordSet];
 
-        VertexDataStream* texcoords = mesh->AddDataStream(
-          static_cast<ezGALVertexAttributeSemantic::Enum>(ezGALVertexAttributeSemantic::TexCoord0 + texcoordSet), texcoordDimensionality);
+        VertexDataStream* texcoords = mesh->AddDataStream(static_cast<ezGALVertexAttributeSemantic::Enum>(ezGALVertexAttributeSemantic::TexCoord0 + texcoordSet), texcoordDimensionality);
         texcoords->ReserveData(assimpMesh->mNumVertices);
         for (unsigned int coord = 0; coord < assimpMesh->mNumVertices; ++coord)
         {
-          texcoords->AddValues(
-            ezArrayPtr<char>(reinterpret_cast<char*>(assimpMesh->mTextureCoords[texcoordSet] + coord), texcoordDimensionality * sizeof(float)));
+          texcoords->AddValues(ezArrayPtr<char>(reinterpret_cast<char*>(assimpMesh->mTextureCoords[texcoordSet] + coord), texcoordDimensionality * sizeof(float)));
         }
         vertexDataStreams.PushBack(texcoords);
       }
@@ -329,8 +323,7 @@ namespace ezModelImporter
 
       // Material - an assimp mesh uses only a single material!
       if (assimpMesh->mMaterialIndex >= materialHandles.GetCount())
-        ezLog::Warning("Mesh '{0}' in '{1}' points to material {2}, but there are only {3} materials.", mesh->m_Name, szFileName,
-          assimpMesh->mMaterialIndex, materialHandles.GetCount());
+        ezLog::Warning("Mesh '{0}' in '{1}' points to material {2}, but there are only {3} materials.", mesh->m_Name, szFileName, assimpMesh->mMaterialIndex, materialHandles.GetCount());
       else
       {
         SubMesh subMesh;

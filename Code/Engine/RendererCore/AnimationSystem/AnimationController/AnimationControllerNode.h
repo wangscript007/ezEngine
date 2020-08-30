@@ -33,6 +33,7 @@ protected:
 
   ezAnimationController* m_pOwner = nullptr;
   ozz::vector<ozz::math::SoaTransform> m_ozzLocalTransforms;
+  ozz::vector<ozz::math::SimdFloat4> m_ozzBlendWeightsSOA;
 };
 
 class EZ_RENDERERCORE_DLL ezSampleAnimGraphNode : public ezAnimationControllerNode
@@ -49,6 +50,9 @@ public:
   void SetBlackboardEntry(const char* szFile); // [ property ]
   const char* GetBlackboardEntry() const;      // [ property ]
 
+  void SetPartialBlendingRootBone(const char* szBone); // [ property ]
+  const char* GetPartialBlendingRootBone() const;      // [ property ]
+
   virtual ezResult SerializeNode(ezStreamWriter& stream) const override;
   virtual ezResult DeserializeNode(ezStreamReader& stream) override;
 
@@ -60,7 +64,9 @@ public:
 
 private:
   ezHashedString m_sBlackboardEntry;
+  ezHashedString m_sPartialBlendingRootBone;
   ezTime m_PlaybackTime;
   ozz::animation::SamplingCache m_ozzSamplingCache;
   float m_fCurWeight = 0.0f;
+  bool m_bIsRampingUpOrDown = false;
 };
