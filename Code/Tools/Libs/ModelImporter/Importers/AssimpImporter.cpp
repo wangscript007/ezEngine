@@ -193,14 +193,14 @@ namespace ezModelImporter
       if (assimpMesh->HasPositions())
       {
         VertexDataStream* positions = mesh->AddDataStream(ezGALVertexAttributeSemantic::Position, 3);
-        ezArrayPtr<char> assimpPositionPtr(reinterpret_cast<char*>(assimpMesh->mVertices), assimpMesh->mNumVertices * sizeof(ezVec3));
+        ezArrayPtr<ezUInt8> assimpPositionPtr(reinterpret_cast<ezUInt8*>(assimpMesh->mVertices), assimpMesh->mNumVertices * sizeof(ezVec3));
         positions->AddValues(assimpPositionPtr);
         vertexDataStreams.PushBack(positions);
       }
       if (assimpMesh->HasNormals())
       {
         VertexDataStream* normals = mesh->AddDataStream(ezGALVertexAttributeSemantic::Normal, 3);
-        ezArrayPtr<char> assimpNormalPtr(reinterpret_cast<char*>(assimpMesh->mNormals), assimpMesh->mNumVertices * sizeof(ezVec3));
+        ezArrayPtr<ezUInt8> assimpNormalPtr(reinterpret_cast<ezUInt8*>(assimpMesh->mNormals), assimpMesh->mNumVertices * sizeof(ezVec3));
         normals->AddValues(assimpNormalPtr);
         vertexDataStreams.PushBack(normals);
       }
@@ -212,7 +212,7 @@ namespace ezModelImporter
       for (ezUInt32 colorSet = 0; colorSet < numColorChannels; ++colorSet)
       {
         VertexDataStream* colors = mesh->AddDataStream(static_cast<ezGALVertexAttributeSemantic::Enum>(ezGALVertexAttributeSemantic::Color0 + colorSet), 4);
-        ezArrayPtr<char> assimpColorsPtr(reinterpret_cast<char*>(assimpMesh->mColors[colorSet]), assimpMesh->mNumVertices * sizeof(ezVec4));
+        ezArrayPtr<ezUInt8> assimpColorsPtr(reinterpret_cast<ezUInt8*>(assimpMesh->mColors[colorSet]), assimpMesh->mNumVertices * sizeof(ezVec4));
         colors->AddValues(assimpColorsPtr);
         vertexDataStreams.PushBack(colors);
       }
@@ -222,8 +222,8 @@ namespace ezModelImporter
         VertexDataStream* tangents = mesh->AddDataStream(ezGALVertexAttributeSemantic::Tangent, 3);
         VertexDataStream* bitangents = mesh->AddDataStream(ezGALVertexAttributeSemantic::BiTangent, 3);
 
-        ezArrayPtr<char> assimpTangentsPtr(reinterpret_cast<char*>(assimpMesh->mTangents), assimpMesh->mNumVertices * sizeof(ezVec3));
-        ezArrayPtr<char> assimpBitangentsPtr(reinterpret_cast<char*>(assimpMesh->mBitangents), assimpMesh->mNumVertices * sizeof(ezVec3));
+        ezArrayPtr<ezUInt8> assimpTangentsPtr(reinterpret_cast<ezUInt8*>(assimpMesh->mTangents), assimpMesh->mNumVertices * sizeof(ezVec3));
+        ezArrayPtr<ezUInt8> assimpBitangentsPtr(reinterpret_cast<ezUInt8*>(assimpMesh->mBitangents), assimpMesh->mNumVertices * sizeof(ezVec3));
         tangents->AddValues(assimpTangentsPtr);
         bitangents->AddValues(assimpBitangentsPtr);
 
@@ -239,7 +239,7 @@ namespace ezModelImporter
         texcoords->ReserveData(assimpMesh->mNumVertices);
         for (unsigned int coord = 0; coord < assimpMesh->mNumVertices; ++coord)
         {
-          texcoords->AddValues(ezArrayPtr<char>(reinterpret_cast<char*>(assimpMesh->mTextureCoords[texcoordSet] + coord), texcoordDimensionality * sizeof(float)));
+          texcoords->AddValues(ezArrayPtr<ezUInt8>(reinterpret_cast<ezUInt8*>(assimpMesh->mTextureCoords[texcoordSet] + coord), texcoordDimensionality * sizeof(float)));
         }
         vertexDataStreams.PushBack(texcoords);
       }
@@ -257,16 +257,13 @@ namespace ezModelImporter
 
         ezDynamicArray<ezVec4> jointWeightData;
         ezDynamicArray<ezVec4U32> jointIndexData;
-        ezDynamicArray<ezUInt8> jointInfluenceCount;
 
-        jointInfluenceCount.SetCountUninitialized(assimpMesh->mNumVertices);
         jointWeightData.SetCountUninitialized(assimpMesh->mNumVertices);
         jointIndexData.SetCountUninitialized(assimpMesh->mNumVertices);
 
         // init all with zero
         for (ezUInt32 i = 0; i < assimpMesh->mNumVertices; ++i)
         {
-          jointInfluenceCount[i] = 0;
           jointWeightData[i].SetZero();
           jointIndexData[i].SetZero();
         }
@@ -293,17 +290,41 @@ namespace ezModelImporter
           {
             const auto& wgt = pJoint->mWeights[w];
             const ezUInt32 vtxIdx = wgt.mVertexId;
-            const ezUInt32 influence = jointInfluenceCount[vtxIdx]++;
+            float* jointWeights = jointWeightData[vtxIdx].GetData();
+            ezUInt32* jointIndices = jointIndexData[vtxIdx].GetData();
 
-            EZ_ASSERT_DEBUG(influence < 4, "Too many joint influences for a single vertex");
+            ezUInt32 uiLeastWeightIdx = 0;
 
-            jointWeightData[vtxIdx].GetData()[influence] = wgt.mWeight;
-            jointIndexData[vtxIdx].GetData()[influence] = uiJointIndex;
+            for (int i = 1; i < 4; ++i)
+            {
+              if (jointWeights[i] < jointWeights[uiLeastWeightIdx])
+              {
+                uiLeastWeightIdx = i;
+              }
+            }
+
+            if (jointWeights[uiLeastWeightIdx] < wgt.mWeight)
+            {
+              jointWeights[uiLeastWeightIdx] = wgt.mWeight;
+              jointIndices[uiLeastWeightIdx] = uiJointIndex;
+            }
           }
         }
 
-        jointWeightStream->AddValues(ezArrayPtr<char>(reinterpret_cast<char*>(jointWeightData.GetData()), jointWeightData.GetCount() * 4 * sizeof(float)));
-        jointIndicesStream->AddValues(ezArrayPtr<char>(reinterpret_cast<char*>(jointIndexData.GetData()), jointIndexData.GetCount() * 4 * sizeof(ezUInt32)));
+        // make sure the skinning weights are below 1
+        // apparently it is normal for vertices to have weights below 1
+        // so we can't just normalize the weight vector, that would cause artifacts
+        for (auto& weights : jointWeightData)
+        {
+          const float fLen = weights.GetLength();
+          if (fLen > 1.0f)
+          {
+            weights /= fLen;
+          }
+        }
+
+        jointWeightStream->AddValues(jointWeightData.GetByteArrayPtr());
+        jointIndicesStream->AddValues(jointIndexData.GetByteArrayPtr());
       }
 
       // Triangles/Indices
