@@ -12,6 +12,9 @@ ezAnimationController::~ezAnimationController() = default;
 
 void ezAnimationController::Update(ezTime tDiff)
 {
+  if (!m_hSkeleton.IsValid())
+    return;
+
   ezResourceLock<ezSkeletonResource> pSkeleton(m_hSkeleton, ezResourceAcquireMode::BlockTillLoaded_NeverFail);
   if (pSkeleton.GetAcquireResult() != ezResourceAcquireResult::Final)
     return;
@@ -92,6 +95,9 @@ void ezAnimationController::Finalize(const ezSkeletonResource* pSkeleton)
 
 void ezAnimationController::SendResultTo(ezGameObject* pObject)
 {
+  if (!m_hSkeleton.IsValid())
+    return;
+
   ezResourceLock<ezSkeletonResource> pSkeleton(m_hSkeleton, ezResourceAcquireMode::BlockTillLoaded_NeverFail);
   if (pSkeleton.GetAcquireResult() != ezResourceAcquireResult::Final)
     return;

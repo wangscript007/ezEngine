@@ -26,6 +26,9 @@ public:
   virtual void SerializeComponent(ezWorldWriter& stream) const override;
   virtual void DeserializeComponent(ezWorldReader& stream) override;
 
+protected:
+  virtual void OnSimulationStarted() override;
+
   //////////////////////////////////////////////////////////////////////////
   // ezJointAttachmentComponent
 
@@ -38,12 +41,6 @@ public:
 
   void SetAnimationClipFile(const char* szFile); // [ property ]
   const char* GetAnimationClipFile() const;      // [ property ]
-
-  void SetSkeleton(const ezSkeletonResourceHandle& hResource);
-  const ezSkeletonResourceHandle& GetSkeleton() const;
-
-  void SetSkeletonFile(const char* szFile); // [ property ]
-  const char* GetSkeletonFile() const;      // [ property ]
 
   ezEnum<ezPropertyAnimMode> m_AnimationMode; // [ property ]
   float m_fSpeed = 1.0f;                      // [ property ]

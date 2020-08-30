@@ -6,6 +6,7 @@
 #include <RendererCore/AnimationSystem/SkeletonResource.h>
 #include <RendererFoundation/Device/Device.h>
 
+#include <RendererCore/AnimationSystem/Declarations.h>
 #include <ozz/animation/runtime/skeleton.h>
 
 // clang-format off
@@ -19,7 +20,8 @@ EZ_BEGIN_COMPONENT_TYPE(ezAnimatedMeshComponent, 13, ezComponentMode::Dynamic); 
 
   EZ_BEGIN_MESSAGEHANDLERS
   {
-    EZ_MESSAGE_HANDLER(ezMsgAnimationPoseUpdated, OnAnimationPoseUpdated)
+    EZ_MESSAGE_HANDLER(ezMsgAnimationPoseUpdated, OnAnimationPoseUpdated),
+    EZ_MESSAGE_HANDLER(ezMsgQueryAnimationSkeleton, OnQueryAnimationSkeleton)
   }
   EZ_END_MESSAGEHANDLERS;
 }
@@ -118,5 +120,9 @@ void ezAnimatedMeshComponent::OnAnimationPoseUpdated(ezMsgAnimationPoseUpdated& 
   m_SkinningMatrices = m_AnimationPose.GetAllTransforms();
 }
 
+void ezAnimatedMeshComponent::OnQueryAnimationSkeleton(ezMsgQueryAnimationSkeleton& msg)
+{
+  msg.m_hSkeleton = m_hSkeleton;
+}
 
 EZ_STATICLINK_FILE(GameEngine, GameEngine_Animation_Skeletal_Implementation_AnimatedMeshComponent);

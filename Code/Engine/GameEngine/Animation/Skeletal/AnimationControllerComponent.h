@@ -32,12 +32,6 @@ public:
   ezAnimationControllerComponent();
   ~ezAnimationControllerComponent();
 
-  void SetSkeleton(const ezSkeletonResourceHandle& hResource);
-  const ezSkeletonResourceHandle& GetSkeleton() const;
-
-  void SetSkeletonFile(const char* szFile); // [ property ]
-  const char* GetSkeletonFile() const;      // [ property ]
-
   void SetAnimationControllerFile(const char* szFile); // [ property ]
   const char* GetAnimationControllerFile() const;      // [ property ]
 
@@ -45,6 +39,5 @@ protected:
   void Update();
 
   ezAnimationControllerResourceHandle m_hAnimationController;
-  ezSkeletonResourceHandle m_hSkeleton;
   ezAnimationController m_AnimationGraph;
 };

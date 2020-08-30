@@ -37,7 +37,8 @@ public:
   ~ezAnimatedMeshComponent();
 
 protected:
-  void OnAnimationPoseUpdated(ezMsgAnimationPoseUpdated& msg); // [ msg handler ]
+  void OnAnimationPoseUpdated(ezMsgAnimationPoseUpdated& msg);     // [ msg handler ]
+  void OnQueryAnimationSkeleton(ezMsgQueryAnimationSkeleton& msg); // [ msg handler ]
 
   ezAnimationPose m_AnimationPose;
   ezSkeletonResourceHandle m_hSkeleton;

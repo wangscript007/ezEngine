@@ -5,6 +5,8 @@
 #include <RendererCore/Components/RenderComponent.h>
 #include <RendererCore/Debug/DebugRenderer.h>
 
+struct ezMsgQueryAnimationSkeleton;
+
 using ezVisualizeSkeletonComponentManager = ezComponentManagerSimple<class ezVisualizeSkeletonComponent, ezComponentUpdateType::WhenSimulating, ezBlockStorageType::Compact>;
 
 class EZ_RENDERERCORE_DLL ezVisualizeSkeletonComponent : public ezRenderComponent
@@ -44,6 +46,7 @@ public:
 protected:
   void Update();
   void OnAnimationPoseUpdated(ezMsgAnimationPoseUpdated& msg); // [ msg handler ]
+  void OnQueryAnimationSkeleton(ezMsgQueryAnimationSkeleton& msg);
   void UpdateSkeletonVis();
 
   ezSkeletonResourceHandle m_hSkeleton;

@@ -20,7 +20,6 @@ EZ_BEGIN_COMPONENT_TYPE(ezSimpleAnimationComponent, 1, ezComponentMode::Static);
   EZ_BEGIN_PROPERTIES
   {
     EZ_ACCESSOR_PROPERTY("AnimationClip", GetAnimationClipFile, SetAnimationClipFile)->AddAttributes(new ezAssetBrowserAttribute("Animation Clip")),
-    EZ_ACCESSOR_PROPERTY("Skeleton", GetSkeletonFile, SetSkeletonFile)->AddAttributes(new ezAssetBrowserAttribute("Skeleton")),
     EZ_ENUM_MEMBER_PROPERTY("AnimationMode", ezPropertyAnimMode, m_AnimationMode),
     EZ_MEMBER_PROPERTY("Speed", m_fSpeed)->AddAttributes(new ezDefaultValueAttribute(1.0f)),
   }
@@ -46,7 +45,6 @@ void ezSimpleAnimationComponent::SerializeComponent(ezWorldWriter& stream) const
   s << m_AnimationMode;
   s << m_fSpeed;
   s << m_hAnimationClip;
-  s << m_hSkeleton;
 }
 
 void ezSimpleAnimationComponent::DeserializeComponent(ezWorldReader& stream)
@@ -58,8 +56,18 @@ void ezSimpleAnimationComponent::DeserializeComponent(ezWorldReader& stream)
   s >> m_AnimationMode;
   s >> m_fSpeed;
   s >> m_hAnimationClip;
-  s >> m_hSkeleton;
 }
+
+void ezSimpleAnimationComponent::OnSimulationStarted()
+{
+  SUPER::OnSimulationStarted();
+
+  ezMsgQueryAnimationSkeleton msg;
+  GetOwner()->SendMessage(msg);
+
+  m_hSkeleton = msg.m_hSkeleton;
+}
+
 
 void ezSimpleAnimationComponent::SetAnimationClip(const ezAnimationClipResourceHandle& hResource)
 {
@@ -91,39 +99,9 @@ const char* ezSimpleAnimationComponent::GetAnimationClipFile() const
   return m_hAnimationClip.GetResourceID();
 }
 
-void ezSimpleAnimationComponent::SetSkeleton(const ezSkeletonResourceHandle& hResource)
-{
-  m_hSkeleton = hResource;
-}
-
-const ezSkeletonResourceHandle& ezSimpleAnimationComponent::GetSkeleton() const
-{
-  return m_hSkeleton;
-}
-
-void ezSimpleAnimationComponent::SetSkeletonFile(const char* szFile)
-{
-  ezSkeletonResourceHandle hResource;
-
-  if (!ezStringUtils::IsNullOrEmpty(szFile))
-  {
-    hResource = ezResourceManager::LoadResource<ezSkeletonResource>(szFile);
-  }
-
-  SetSkeleton(hResource);
-}
-
-const char* ezSimpleAnimationComponent::GetSkeletonFile() const
-{
-  if (!m_hSkeleton.IsValid())
-    return "";
-
-  return m_hSkeleton.GetResourceID();
-}
-
 void ezSimpleAnimationComponent::Update()
 {
-  if (!m_hSkeleton.IsValid() || !m_hAnimationClip.IsValid() && m_fSpeed == 0.0f)
+  if (!m_hSkeleton.IsValid() || !m_hAnimationClip.IsValid() || m_fSpeed == 0.0f)
     return;
 
   ezResourceLock<ezAnimationClipResource> pAnimation(m_hAnimationClip, ezResourceAcquireMode::BlockTillLoaded_NeverFail);

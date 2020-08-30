@@ -13,7 +13,6 @@ EZ_BEGIN_COMPONENT_TYPE(ezAnimationControllerComponent, 1, ezComponentMode::Stat
 {
   EZ_BEGIN_PROPERTIES
   {
-    EZ_ACCESSOR_PROPERTY("Skeleton", GetSkeletonFile, SetSkeletonFile)->AddAttributes(new ezAssetBrowserAttribute("Skeleton")),
     EZ_ACCESSOR_PROPERTY("AnimController", GetAnimationControllerFile, SetAnimationControllerFile)->AddAttributes(new ezAssetBrowserAttribute("Animation Controller")),
   }
   EZ_END_PROPERTIES;
@@ -35,7 +34,6 @@ void ezAnimationControllerComponent::SerializeComponent(ezWorldWriter& stream) c
   SUPER::SerializeComponent(stream);
   auto& s = stream.GetStream();
 
-  s << m_hSkeleton;
   s << m_hAnimationController;
 }
 
@@ -45,40 +43,8 @@ void ezAnimationControllerComponent::DeserializeComponent(ezWorldReader& stream)
   const ezUInt32 uiVersion = stream.GetComponentTypeVersion(GetStaticRTTI());
   auto& s = stream.GetStream();
 
-  s >> m_hSkeleton;
   s >> m_hAnimationController;
 }
-
-void ezAnimationControllerComponent::SetSkeleton(const ezSkeletonResourceHandle& hResource)
-{
-  m_hSkeleton = hResource;
-}
-
-const ezSkeletonResourceHandle& ezAnimationControllerComponent::GetSkeleton() const
-{
-  return m_hSkeleton;
-}
-
-void ezAnimationControllerComponent::SetSkeletonFile(const char* szFile)
-{
-  ezSkeletonResourceHandle hResource;
-
-  if (!ezStringUtils::IsNullOrEmpty(szFile))
-  {
-    hResource = ezResourceManager::LoadResource<ezSkeletonResource>(szFile);
-  }
-
-  SetSkeleton(hResource);
-}
-
-const char* ezAnimationControllerComponent::GetSkeletonFile() const
-{
-  if (!m_hSkeleton.IsValid())
-    return "";
-
-  return m_hSkeleton.GetResourceID();
-}
-
 
 void ezAnimationControllerComponent::SetAnimationControllerFile(const char* szFile)
 {
@@ -107,7 +73,11 @@ void ezAnimationControllerComponent::OnSimulationStarted()
 
   if (!m_hAnimationController.IsValid())
     return;
-  if (!m_hSkeleton.IsValid())
+
+  ezMsgQueryAnimationSkeleton msg;
+  GetOwner()->SendMessage(msg);
+
+  if (!msg.m_hSkeleton.IsValid())
     return;
 
   ezResourceLock<ezAnimationControllerResource> pAnimController(m_hAnimationController, ezResourceAcquireMode::BlockTillLoaded_NeverFail);
@@ -116,7 +86,7 @@ void ezAnimationControllerComponent::OnSimulationStarted()
 
   pAnimController->DeserializeAnimationControllerState(m_AnimationGraph);
 
-  m_AnimationGraph.m_hSkeleton = m_hSkeleton;
+  m_AnimationGraph.m_hSkeleton = msg.m_hSkeleton;
 
   ezHashedString hs;
   hs.Assign("Idle");
@@ -141,9 +111,6 @@ void ezAnimationControllerComponent::OnSimulationStarted()
 
 void ezAnimationControllerComponent::Update()
 {
-  if (!m_hSkeleton.IsValid())
-    return;
-
   m_AnimationGraph.Update(GetWorld()->GetClock().GetTimeDiff());
   m_AnimationGraph.SendResultTo(GetOwner());
 
