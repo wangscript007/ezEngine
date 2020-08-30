@@ -12,8 +12,10 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+// clang-format off
 EZ_BEGIN_DYNAMIC_REFLECTED_TYPE(ezSkeletonAssetDocument, 2, ezRTTINoAllocator)
 EZ_END_DYNAMIC_REFLECTED_TYPE;
+// clang-format on
 
 ezSkeletonAssetDocument::ezSkeletonAssetDocument(const char* szDocumentPath)
   : ezSimpleAssetDocument<ezEditableSkeleton>(szDocumentPath, ezAssetDocEngineConnection::Simple)
@@ -61,7 +63,7 @@ void ezSkeletonAssetDocument::PropertyMetaStateEventHandler(ezPropertyMetaStateE
 
 using namespace ezModelImporter;
 
-static ezStatus ImportSkeleton(const char* filename, ezSharedPtr<ezModelImporter::Scene>& outScene)
+static ezStatus ImportSkeletonScene(const char* filename, ezSharedPtr<ezModelImporter::Scene>& outScene)
 {
   ezStringBuilder sAbsFilename = filename;
   if (!ezQtEditorApp::GetSingleton()->MakeDataDirectoryRelativePathAbsolute(sAbsFilename))
@@ -89,7 +91,7 @@ ezStatus ezSkeletonAssetDocument::InternalTransformAsset(ezStreamWriter& stream,
   range.BeginNextStep("Importing Source File");
 
   ezSharedPtr<Scene> scene;
-  EZ_SUCCEED_OR_RETURN(ImportSkeleton(pProp->m_sAnimationFile, scene));
+  EZ_SUCCEED_OR_RETURN(ImportSkeletonScene(pProp->m_sAnimationFile, scene));
 
   range.BeginNextStep("Importing Skeleton Data");
 
@@ -187,8 +189,7 @@ ezSkeletonAssetDocumentGenerator::ezSkeletonAssetDocumentGenerator()
 
 ezSkeletonAssetDocumentGenerator::~ezSkeletonAssetDocumentGenerator() = default;
 
-void ezSkeletonAssetDocumentGenerator::GetImportModes(
-  const char* szParentDirRelativePath, ezHybridArray<ezAssetDocumentGenerator::Info, 4>& out_Modes) const
+void ezSkeletonAssetDocumentGenerator::GetImportModes(const char* szParentDirRelativePath, ezHybridArray<ezAssetDocumentGenerator::Info, 4>& out_Modes) const
 {
   ezStringBuilder baseOutputFile = szParentDirRelativePath;
   baseOutputFile.ChangeFileExtension(GetDocumentExtension());

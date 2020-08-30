@@ -443,7 +443,7 @@ namespace ezModelImporter
     }
   }
 
-  void ImportSkeletonRecursive(aiNode* assimpNode, ezDynamicArray<JointInfo>& inout_allMeshJoints, ezUInt32 uiParentJointIdx)
+  void ImportSkeletonDataRecursive(const ezMat4& parentTransform, aiNode* assimpNode, ezDynamicArray<JointInfo>& inout_allMeshJoints, ezUInt32 uiParentJointIdx)
   {
     const ezUInt32 jointIdx = inout_allMeshJoints.GetCount();
     auto& jointInfo = inout_allMeshJoints.ExpandAndGetRef();
@@ -459,9 +459,9 @@ namespace ezModelImporter
     }
   }
 
-  void ImportSkeleton(const aiScene* assimpScene, ezDynamicArray<JointInfo>& allMeshJoints)
+  void ImportSkeletonData(const aiScene* assimpScene, ezDynamicArray<JointInfo>& allMeshJoints)
   {
-    ImportSkeletonRecursive(assimpScene->mRootNode, allMeshJoints, ezInvalidIndex);
+    ImportSkeletonDataRecursive(ezMat4::IdentityMatrix(), assimpScene->mRootNode, allMeshJoints, ezInvalidIndex);
 
     // mark the affected nodes/joints as useful
     for (unsigned int meshIdx = 0; meshIdx < assimpScene->mNumMeshes; ++meshIdx)
@@ -633,7 +633,7 @@ namespace ezModelImporter
     ezDynamicArray<JointInfo> allMeshJoints;
     if (importFlags.IsAnySet(ImportFlags::Skeleton))
     {
-      ImportSkeleton(assimpScene, allMeshJoints);
+      ImportSkeletonData(assimpScene, allMeshJoints);
 
       GenerateSkeleton(allMeshJoints, *outScene, fUnitScale);
     }
@@ -653,17 +653,8 @@ namespace ezModelImporter
     // Import nodes.
     if (importFlags.IsAnySet(ImportFlags::Meshes))
     {
-      ezDynamicArray<ObjectHandle> nodeHandles;
       ImportNodes(assimpScene->mRootNode, meshHandles, *outScene);
     }
-
-    // Import lights.
-    // TODO
-
-    // Import cameras.
-    // TODO
-
-    // Import nodes and build hierarchy.
 
     return outScene;
   }
