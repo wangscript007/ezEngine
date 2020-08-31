@@ -6,15 +6,17 @@
 class ezLogInterface;
 class ezProgress;
 class ezEditableSkeleton;
+class ezMeshResourceDescriptor;
 
 namespace ezModelImporter2
 {
   struct ImportOptions
   {
-    bool m_bImportMeshes = false;
     bool m_bImportSkinningData = false;
-    bool m_bImportSkeleton = false;
     bool m_bImportAnimations = false;
+
+    ezMeshResourceDescriptor* m_pMeshOutput = nullptr;
+    ezEditableSkeleton* m_pSkeletonOutput = nullptr;
 
     ezString m_sSourceFile;
   };
@@ -26,8 +28,6 @@ namespace ezModelImporter2
     virtual ~Importer();
 
     ezResult Import(const ImportOptions& options, ezLogInterface* pLogInterface = nullptr, ezProgress* pProgress = nullptr);
-
-    ezUniquePtr<ezEditableSkeleton> m_pSkeletonResult;
 
   protected:
     virtual ezResult DoImport() = 0;

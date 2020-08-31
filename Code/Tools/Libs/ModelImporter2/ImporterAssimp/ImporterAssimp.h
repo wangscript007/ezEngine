@@ -21,12 +21,25 @@ namespace ezModelImporter2
 
   private:
     ezResult TraverseAiScene();
+
+    ezResult PrepareOutputMesh();
+
     ezResult TraverseAiNode(aiNode* pNode, const ezMat4& parentTransform, ezEditableSkeletonJoint* pCurJoint);
     ezResult ProcessAiMesh(aiMesh* pMesh, const ezMat4& transform);
 
     Assimp::Importer m_aiImporter;
     const aiScene* m_aiScene = nullptr;
     float m_fUnitScale = 1.0f;
+    ezUInt32 m_uiTotalMeshVertices = 0;
+    ezUInt32 m_uiTotalMeshTriangles = 0;
+
+    struct MeshInstance
+    {
+      ezMat4 m_GlobalTransform;
+      aiMesh* m_pMesh;
+    };
+
+    ezMap<ezUInt32, ezHybridArray<MeshInstance, 4>> m_MeshInstances;
   };
 
   extern ezColor ConvertAssimpType(const aiColor3D& value, bool invert = false);

@@ -3,6 +3,7 @@
 #include <Foundation/Logging/Log.h>
 #include <ModelImporter2/Importer/Importer.h>
 #include <RendererCore/AnimationSystem/EditableSkeleton.h>
+#include <RendererCore/Meshes/MeshResourceDescriptor.h>
 
 namespace ezModelImporter2
 {
@@ -25,8 +26,6 @@ namespace ezModelImporter2
       m_Options = options;
 
       EZ_LOG_BLOCK("ModelImport", m_Options.m_sSourceFile);
-
-      m_pSkeletonResult = EZ_DEFAULT_NEW(ezEditableSkeleton);
 
       res = DoImport();
     }
